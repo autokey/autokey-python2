@@ -38,7 +38,20 @@ NON_PRINTING_MODIFIERS = [KEY_CONTROL, KEY_ALT, KEY_SUPER]
 CHAR_NEWLINE = '\n'
 CHAR_SPACE = ' '
 
+import time, threading
 import interface
+
+def threaded(f):
+    
+    def wrapper(*args):
+        t = threading.Thread(target=f, args=args)
+        t.setDaemon(False)
+        t.start()
+        
+    wrapper.__name__ = f.__name__
+    wrapper.__dict__ = f.__dict__
+    wrapper.__doc__ = f.__doc__
+    return wrapper
 
 class IoMediator:
     """
@@ -112,7 +125,7 @@ class IoMediator:
         if not modifier == KEY_CAPSLOCK:
             self.modifiers[modifier] = False
                 
-    
+    @threaded
     def handle_keypress(self, keyCode):
         """
         Looks up the character for the given key code, applying any 
@@ -138,41 +151,73 @@ class IoMediator:
         self.service.handle_keypress(None)
         
     # Methods for expansion service ----
-        
+    
     def send_string(self, string):
         """
         Sends the given string for output.
         """
+        self.acquire_lock()
+
         self.__clearModifiers()
         self.interface.send_string(string.decode("utf-8"))
         self.__reapplyModifiers()
         
+        self.release_lock()
+        
     def send_key(self, keyName):
+        self.acquire_lock()
+            
         self.interface.send_key(keyName)
+        
+        self.release_lock()
         
     def send_left(self, count):
         """
         Sends the given number of left key presses.
         """
+        self.acquire_lock()
+        
         for i in range(count):
             self.interface.send_key(KEY_LEFT)
+            
+        self.release_lock()
     
     def send_up(self, count):
         """
         Sends the given number of up key presses.
         """        
+        self.acquire_lock()
+        
         for i in range(count):
             self.interface.send_key(KEY_UP)
             
+        self.release_lock()
+        
     def send_backspace(self, count):
         """
         Sends the given number of backspace key presses.
-        """        
+        """
+        self.acquire_lock()
+        
         for i in range(count):
             self.interface.send_key(KEY_BACKSPACE)
             
+        self.release_lock()
+            
     def flush(self):
         self.interface.flush()
+        
+    def acquire_lock(self):
+        """
+        Acquires the lock that is engaged while a key is pressed. 
+        """
+        self.interface.lock.acquire()
+        
+    def release_lock(self):
+        """
+        Releases the lock that is engaged while a key is pressed. 
+        """
+        self.interface.lock.release()
             
     # Utility methods ----
     

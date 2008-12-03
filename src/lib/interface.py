@@ -58,10 +58,13 @@ class XLibInterface(threading.Thread):
     def __init__(self, mediator):
         threading.Thread.__init__(self)
         self.setDaemon(True)
+        self.setName("XLibInterface-thread")
         self.mediator = mediator
         self.local_dpy = display.Display()
         self.record_dpy = display.Display()
         self.rootWindow = self.local_dpy.screen().root
+        #self.keyDown = False
+        self.lock = threading.RLock()
         
         # Map of keyname to keycode
         self.keyCodes = {}
@@ -84,7 +87,6 @@ class XLibInterface(threading.Thread):
                 # temporary workaround - set Alt-Gr
                 self.keyCodes[iomediator.KEY_ALT_GR] = 113
                 self.keyNames[113] = iomediator.KEY_ALT_GR
-                print repr(self.keyCodes)
                 break
         
     def run(self):
@@ -128,6 +130,7 @@ class XLibInterface(threading.Thread):
             else:
                 return unichr(self.local_dpy.keycode_to_keysym(keyCode, 0))
     
+
     def send_string(self, string):
         """
         Send a string of printable characters.
@@ -148,7 +151,7 @@ class XLibInterface(threading.Thread):
                     self.__sendKeyCode(keyCode)                    
             else:
                 self.send_key(char)
-                
+    
     def send_key(self, keyName):
         """
         Send a specific non-printing key, eg Up, Left, etc
@@ -157,10 +160,10 @@ class XLibInterface(threading.Thread):
         
     def flush(self):
         self.local_dpy.flush()
-        
+    
     def press_key(self, keyName):
         xtest.fake_input(self.rootWindow, X.KeyPress, self.__lookupKeyCode(keyName))
-        
+    
     def release_key(self, keyName):
         xtest.fake_input(self.rootWindow, X.KeyRelease, self.__lookupKeyCode(keyName))  
 
@@ -185,18 +188,22 @@ class XLibInterface(threading.Thread):
                 self.mediator.handle_mouse_click()
                 
     def __handleKeyPress(self, keyCode):
+        #self.keyDown = True
+        self.lock.acquire()
         modifier = self.__decodeModifier(keyCode)
         if modifier is not None:
             self.mediator.handle_modifier_down(modifier)
-        #else:
-        #    self.mediator.handle_keypress(keyCode)
+        else:
+            self.mediator.handle_keypress(keyCode)
             
     def __handleKeyRelease(self, keyCode):
+        #self.keyDown = False
+        self.lock.release()
         modifier = self.__decodeModifier(keyCode)
         if modifier is not None:
             self.mediator.handle_modifier_up(modifier)
-        else:
-            self.mediator.handle_keypress(keyCode)
+        #else:
+        #    self.mediator.handle_keypress(keyCode)
                     
     def __decodeModifier(self, keyCode):
         """

@@ -16,12 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import sys, os, os.path, threading, gamin, string, time, ConfigParser, select, re, subprocess
+import sys, os, os.path, threading, gamin, string, time, select, re, subprocess
+from configobj import ConfigObj
 import iomediator
 from abbreviation import *
 
 CONFIG_FILE = "../../config/abbr.ini"
-LOCK_FILE = ".autokey.lck"
 
 # Local configuration sections
 CONFIG_SECTION = "config"
@@ -52,12 +52,13 @@ def escape_text(text):
 
 class ExpansionService:
     
-    def __init__(self, trayIcon=None):
+    def __init__(self, trayIcon):
         self.trayIcon = trayIcon
+        self.keystrokesSaved = 0
         
         # Read configuration
         config = self.__loadAbbreviations()
-        self.interfaceType = config.get(CONFIG_SECTION, METHOD_OPTION)
+        self.interfaceType = config[CONFIG_SECTION][METHOD_OPTION]
         
         # Set up config file monitoring
         self.monitor = FileMonitor(self.__reloadAbbreviations)
@@ -96,23 +97,25 @@ class ExpansionService:
             self.monitor.stop()
         
         try:
-            config = ConfigParser.ConfigParser()
-            config.read([CONFIG_FILE])        
-            config.set(CONFIG_SECTION, METHOD_OPTION, self.interfaceType)
-            fp = open(CONFIG_FILE, 'w')
-            config.write(fp)
+            config = ConfigObj(CONFIG_FILE, list_values=False)
+            config.filename(CONFIG_FILE)
+            config[CONFIG_SECTION][METHOD_OPTION] = self.interfaceType
+            #fp = open(CONFIG_FILE, 'w')
+            config.write()
 
         except Exception:
             pass
 
-        finally:
-            try:
-                fp.close()
-            except Exception:
-                pass
+        #finally:
+        #    try:
+        #        fp.close()
+        #    except Exception:
+        #        pass
                 
-    
-    def handle_keypress(self, key):        
+    def handle_keypress(self, key):
+        if self.ignoreCount > 0:
+            self.ignoreCount -= 1
+            return
        
         if key == iomediator.KEY_BACKSPACE:
             # handle backspace by dropping the last saved character
@@ -137,7 +140,17 @@ class ExpansionService:
                         break
                 
                 if expansion is not None:
-                    self.mediator.send_backspace(expansion.backspaces)
+                    # Check for extra keys that have been typed since this  invocation started
+                    # This looks pretty hacky, but if you can do better feel free to send a patch :)
+                    self.mediator.acquire_lock()
+                    extraBs = len(self.inputStack) - len(currentInput)
+                    if extraBs > 0:
+                        extraKeys = ''.join(self.inputStack[len(currentInput)])
+                    else:
+                        extraKeys = ''
+                    self.mediator.release_lock()
+                    
+                    self.mediator.send_backspace(expansion.backspaces + extraBs)
                     
                     # Shell expansion
                     p = subprocess.Popen("/bin/echo -e " + escape_text(expansion.string), stdout=subprocess.PIPE,
@@ -146,22 +159,28 @@ class ExpansionService:
                     if result == 0:
                         text = p.stdout.read()
                         text = text[:-1] # remove trailing newline
-                    
+                        
+                        self.ignoreCount = len(text) + expansion.backspaces + extraBs + len(extraKeys)
+                        self.inputStack = []
+                        
                         self.mediator.send_string(text)
+                        self.mediator.send_string(extraKeys)
                         self.mediator.send_up(expansion.ups)
                         self.mediator.send_left(expansion.lefts)
                         self.mediator.flush()
+                        # Keep track of how many keystrokes we saved by expanding abbr's to show in about
+                        self.keystrokesSaved += (len(text) - len(matchedAbbr))
+                        
                     
                     else:
-                        if self.trayIcon is not None:
-                            errorDetails =  p.stderr.read() + p.stdout.read()
-                            self.trayIcon.show_notify("Error during shell expansion of '%s'." % matchedAbbr, True, errorDetails)
+                        errorDetails =  p.stderr.read() + p.stdout.read()
+                        self.trayIcon.show_notify("Error during shell expansion of '%s'." % matchedAbbr, True, errorDetails)
                     
                 
         if len(self.inputStack) > MAX_STACK_LENGTH: 
             self.inputStack.pop(0)
             
-        #print self.inputStack
+        print self.inputStack
     
     @synchronized(ABBREVIATIONS_LOCK)
     def __getAbbreviations(self):
@@ -179,13 +198,13 @@ class ExpansionService:
         self.abbreviations = abbr
         
     def __loadAbbreviations(self):
-        p = ConfigParser.ConfigParser()
-        p.read([CONFIG_FILE])
-        abbrDefinitions = dict(p.items(ABBR_SECTION))
-        defaultSettings = dict(p.items(DEFAULTS_SECTION))
+        p = ConfigObj(CONFIG_FILE, list_values=False)
+        abbrDefinitions = p[ABBR_SECTION]
+        defaultSettings = p[DEFAULTS_SECTION]
+        abbrDictionary = abbrDefinitions.dict()
         applySettings(Abbreviation.global_settings, defaultSettings)
         abbreviations = []
-        definitions = abbrDefinitions.keys()
+        definitions = abbrDictionary.keys()
         definitions.sort()
 
         while len(definitions) > 0:
@@ -215,11 +234,9 @@ class ExpansionService:
     def __reloadAbbreviations(self):
         try:
             self.__loadAbbreviations()
-            if self.trayIcon is not None:
-                self.trayIcon.show_notify("The abbreviations have been reloaded.")
+            self.trayIcon.show_notify("The abbreviations have been reloaded.")
         except Exception, e:
-            if self.trayIcon is not None:
-                self.trayIcon.show_notify("An error occurred while reloading the abbreviations.\n", True, str(e))
+            self.trayIcon.show_notify("An error occurred while reloading the abbreviations.\n", True, str(e))
         
 class FileMonitor(threading.Thread):
     

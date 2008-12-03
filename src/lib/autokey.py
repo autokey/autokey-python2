@@ -19,7 +19,8 @@
 
 import pygtk
 pygtk.require("2.0")
-import sys, gtk, os.path, threading, ConfigParser, gobject, time, pynotify, subprocess
+import sys, gtk, os.path, threading, gobject, time, pynotify, subprocess
+from configobj import ConfigObj
 import expansionservice, iomediator
 
 ICON_FILE = "../../config/autokeyicon.svg"
@@ -55,13 +56,13 @@ class AutoKeyTrayIcon(gobject.GObject):
         
     def initialise(self, icon):
         gobject.GObject.__init__(self)
-        pynotify.init("Autokey")
+        pynotify.init("AutoKey")
+        
+        self.service = expansionservice.ExpansionService(self)
         
         if not icon:
-            self.service = expansionservice.ExpansionService()
             self.icon = None
         else:
-            self.service = expansionservice.ExpansionService(self)
             
             # Main Menu items
             self.enableMenuItem = gtk.CheckMenuItem("Enable expansions")
@@ -165,6 +166,7 @@ class AutoKeyTrayIcon(gobject.GObject):
             
     def on_remove_icon(self, widget, data=None):
         self.icon.set_visible(False)
+        self.icon = None
                 
     def on_destroy_and_exit(self, widget, data=None):
         self.service.shutdown()
@@ -173,17 +175,17 @@ class AutoKeyTrayIcon(gobject.GObject):
     def on_show_about(self, widget, data=None):        
         dlg = gtk.AboutDialog()
         dlg.set_name("AutoKey")
-        dlg.set_comments("A text expansion/replacement utility for Linux and X11")
-        dlg.set_version("0.40.1")
+        dlg.set_comments("A text expansion/replacement utility for Linux and X11\nKeystrokes saved: "
+                           + str(self.service.keystrokesSaved))
+        dlg.set_version("0.40.3")
         p = gtk.gdk.pixbuf_new_from_file(ICON_FILE)
         dlg.set_logo(p)
         dlg.run()
         dlg.destroy()
         
     def on_edit_config(self, widget, data=None):
-        config = ConfigParser.ConfigParser()
-        config.read([expansionservice.CONFIG_FILE])
-        editor = config.get(expansionservice.CONFIG_SECTION, EDITOR_OPTION)
+        config = ConfigObj(expansionservice.CONFIG_FILE, list_values=False)
+        editor = config[expansionservice.CONFIG_SECTION][EDITOR_OPTION]
         subprocess.Popen([editor, expansionservice.CONFIG_FILE])
         
     #def on_method_changed(self, widget, data=None):
@@ -197,7 +199,8 @@ class AutoKeyTrayIcon(gobject.GObject):
     def on_show_notify(self, widget, message, details, iconName):
         n = pynotify.Notification("Autokey", message, iconName)
         n.set_urgency(pynotify.URGENCY_LOW)
-        n.attach_to_status_icon(self.icon)
+        if self.icon is not None:
+            n.attach_to_status_icon(self.icon)
         #if details != '':
         #    n.add_action("details", "Details", self.__notifyClicked, details)
         # This doesn't seem to work at all. Bug in pynotify???
