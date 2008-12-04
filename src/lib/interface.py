@@ -125,11 +125,13 @@ class XLibInterface(threading.Thread):
         if keyCode in self.keyNames.keys():
             return self.keyNames[keyCode]
         else:
-            if shifted:
-                return unichr(self.local_dpy.keycode_to_keysym(keyCode, 1))
-            else:
-                return unichr(self.local_dpy.keycode_to_keysym(keyCode, 0))
-    
+            try:
+                if shifted:
+                    return unichr(self.local_dpy.keycode_to_keysym(keyCode, 1))
+                else:
+                    return unichr(self.local_dpy.keycode_to_keysym(keyCode, 0))
+            except ValueError:
+                return None
 
     def send_string(self, string):
         """
@@ -188,7 +190,6 @@ class XLibInterface(threading.Thread):
                 self.mediator.handle_mouse_click()
                 
     def __handleKeyPress(self, keyCode):
-        #self.keyDown = True
         self.lock.acquire()
         modifier = self.__decodeModifier(keyCode)
         if modifier is not None:
@@ -197,7 +198,6 @@ class XLibInterface(threading.Thread):
             self.mediator.handle_keypress(keyCode)
             
     def __handleKeyRelease(self, keyCode):
-        #self.keyDown = False
         self.lock.release()
         modifier = self.__decodeModifier(keyCode)
         if modifier is not None:
