@@ -499,6 +499,7 @@ class XRecordInterface(XInterfaceBase):
 
         # Enable the context; this only returns after a call to record_disable_context,
         # while calling the callback function in the meantime
+        logger.info("XRecord interface thread starting")
         self.recordDisplay.record_enable_context(self.ctx, self.__processEvent)
         # Finally free the context
         self.recordDisplay.record_free_context(self.ctx)
@@ -527,6 +528,47 @@ class XRecordInterface(XInterfaceBase):
                 self._handleKeyRelease(event.detail)
             elif event.type == X.ButtonPress:
                 self.mediator.handle_mouse_click()
+            
+
+class AtSpiInterface(XInterfaceBase):
+    
+    def __init__(self, mediator, testMode=False):
+        XInterfaceBase.__init__(self, mediator, testMode)
+        import pyatspi
+        self.registry = pyatspi.Registry        
+        
+    def start(self):
+        logger.info("AT-SPI interface thread starting")
+        self.registry.registerKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
+        self.registry.registerEventListener(self.__processWindowEvent, 'window:activate')
+        self.registry.registerEventListener(self.__processMouseEvent, 'mouse:button')        
+        
+    def cancel(self):
+        self.registry.deregisterKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
+        self.registry.deregisterEventListener(self.__processWindowEvent, 'window:activate')
+        self.registry.deregisterEventListener(self.__processMouseEvent, 'mouse:button')
+        self.registry.stop()
+        
+    def __processKeyEvent(self, event):
+        if event.type == pyatspi.KEY_PRESSED_EVENT:
+            self._handleKeyPress(event.hw_code)
+        else:
+            self._handleKeyRelease(event.hw_code)
+            
+    def __processMouseEvent(self, event):
+        self.mediator.handle_mouse_click()
+    
+    def __processWindowEvent(self, event):
+        #windowName = event.host_application.name.split('|')[1]
+        self.activeWindow = event.host_application.name
+    
+    def _getWindowTitle(self):
+        logger.debug("Window name: %s", self.activeWindow)
+        return self.activeWindow
+    
+    def __pumpEvents(self):
+        pyatspi.Registry.pumpQueuedEvents()
+        return True
                 
 from iomediator import Key, MODIFIERS
 from configurationmanager import *
@@ -592,47 +634,6 @@ NUMPAD_MAP = {
            KP_SUBTRACT : ("-", "-"),
            KP_ENTER : (Key.RETURN, Key.RETURN),
            }
-
-import pyatspi, gobject
-
-class AtSpiInterface(XInterfaceBase):
-    
-    def __init__(self, mediator, testMode=False):
-        XInterfaceBase.__init__(self, mediator, testMode)
-        self.registry = pyatspi.Registry        
-        
-    def start(self):
-        gobject.idle_add(self.__pumpEvents)
-        self.registry.registerKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
-        self.registry.registerEventListener(self.__processWindowEvent, 'window:activate')
-        self.registry.registerEventListener(self.__processMouseEvent, 'mouse:button')
-        #self.registry.start(async=True)        
-        
-    def cancel(self):
-        self.registry.deregisterKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
-        self.registry.deregisterEventListener(self.__processWindowEvent, 'window:activate')
-        self.registry.deregisterEventListener(self.__processMouseEvent, 'mouse:button')
-        self.registry.stop()
-        
-    def __processKeyEvent(self, event):
-        if event.type == pyatspi.KEY_PRESSED_EVENT:
-            self._handleKeyPress(event.hw_code)
-        else:
-            self._handleKeyRelease(event.hw_code)
-            
-    def __processMouseEvent(self, event):
-        self.mediator.handle_mouse_click()
-    
-    def __processWindowEvent(self, event):
-        windowName = event.host_application.split('|')[1]
-        self.activeWindow = windowName.strip()
-    
-    def _getWindowTitle(self):
-        return self.activeWindow
-    
-    def __pumpEvents(self):
-        pyatspi.Registry.pumpQueuedEvents()
-        return True
     
 
 class MockMediator:

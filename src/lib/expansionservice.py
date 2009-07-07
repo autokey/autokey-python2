@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import time, logging
+import time, logging, os
 import iomediator, ui, configurationmanager
 from iomediator import Key
 from phrasemenu import *
@@ -43,9 +43,12 @@ class ExpansionService:
     def __init__(self, app):
         # Read configuration
         self.configManager = app.configManager
-        #self.interfaceType = iomediator.X_RECORD_INTERFACE
-        #self.interfaceType = iomediator.X_EVDEV_INTERFACE # TODO make configurable
-        self.interfaceType = iomediator.ATSPI_INTERFACE # TODO make configurable
+        interface = os.getenv("AUTOKEY_INTERFACE", iomediator.X_EVDEV_INTERFACE)
+        if interface not in iomediator.INTERFACES:
+            logger.info("Invalid interface type, defaulting to XEvDev")
+            interface = iomediator.X_EVDEV_INTERFACE
+        logger.info("Setting interface type to '%s'", interface)
+        self.interfaceType = interface
         self.mediator = None
         self.app = app
     

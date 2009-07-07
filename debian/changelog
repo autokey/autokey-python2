@@ -1,6 +1,8 @@
 autokey (0.54.4-0~jaunty) jaunty; urgency=low
 
    Add support for numpad keys, and a few other standard keys that were not handled
+   Add AT-SPI interface
+   Add ability to choose interface by setting AUTOKEY_INTERFACE environment variable
     
  -- Chris Dekter <cdekter@gmail.com>  Tue, 7 Jul 2009 20:38:05 +1000
 
