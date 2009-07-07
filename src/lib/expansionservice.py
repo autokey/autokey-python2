@@ -44,7 +44,8 @@ class ExpansionService:
         # Read configuration
         self.configManager = app.configManager
         #self.interfaceType = iomediator.X_RECORD_INTERFACE
-        self.interfaceType = iomediator.X_EVDEV_INTERFACE # TODO make configurable
+        #self.interfaceType = iomediator.X_EVDEV_INTERFACE # TODO make configurable
+        self.interfaceType = iomediator.ATSPI_INTERFACE # TODO make configurable
         self.mediator = None
         self.app = app
     

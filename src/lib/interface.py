@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-__all__ = ["XRecordInterface", "EvDevInterface"]
+__all__ = ["XRecordInterface", "EvDevInterface", "AtSpiInterface"]
 
 
 import os, threading, re, time, socket, select, logging
@@ -305,7 +305,7 @@ class XInterfaceBase(threading.Thread):
         if modifier is not None:
             self.mediator.handle_modifier_down(modifier)
         else:
-            self.mediator.handle_keypress(keyCode, self.__getWindowTitle())
+            self.mediator.handle_keypress(keyCode, self._getWindowTitle())
             
     def _handleKeyRelease(self, keyCode):
         try:
@@ -405,7 +405,7 @@ class XInterfaceBase(threading.Thread):
                 logger.error("Unknown key name: %s", char)
                 raise
     
-    def __getWindowTitle(self):
+    def _getWindowTitle(self):
         try:
             windowvar = self.localDisplay.get_input_focus().focus
             wmname = windowvar.get_wm_name()
@@ -593,49 +593,35 @@ NUMPAD_MAP = {
            KP_ENTER : (Key.RETURN, Key.RETURN),
            }
 
-"""import pyatspi, gobject
+import pyatspi, gobject
 
-class AtSpiInterface(AbstractInterface):
+class AtSpiInterface(XInterfaceBase):
     
     def __init__(self, mediator, testMode=False):
-        AbstractInterface.__init__(self, mediator, testMode)
+        XInterfaceBase.__init__(self, mediator, testMode)
         self.registry = pyatspi.Registry        
         
     def start(self):
         gobject.idle_add(self.__pumpEvents)
         self.registry.registerKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
         self.registry.registerEventListener(self.__processWindowEvent, 'window:activate')
+        self.registry.registerEventListener(self.__processMouseEvent, 'mouse:button')
         #self.registry.start(async=True)        
         
     def cancel(self):
         self.registry.deregisterKeystrokeListener(self.__processKeyEvent, mask=pyatspi.allModifiers())
         self.registry.deregisterEventListener(self.__processWindowEvent, 'window:activate')
+        self.registry.deregisterEventListener(self.__processMouseEvent, 'mouse:button')
         self.registry.stop()
-        
-    def lookup_string(self, keyCode, shifted):
-        pass
-    
-    def send_modified_key(self, keyName, modifiers):
-        pass
-    
-    def send_string(self, string):
-        for char in string:            
-            self.registry.generateKeyboardEvent(None, ord(char), pyatspi.KEY_SYM)
-    
-    def send_key(self, keyName):
-        pass
-    
-    def press_key(self, keyName):
-        pass
-    
-    def release_key(self, keyName):
-        pass
         
     def __processKeyEvent(self, event):
         if event.type == pyatspi.KEY_PRESSED_EVENT:
             self._handleKeyPress(event.hw_code)
         else:
             self._handleKeyRelease(event.hw_code)
+            
+    def __processMouseEvent(self, event):
+        self.mediator.handle_mouse_click()
     
     def __processWindowEvent(self, event):
         windowName = event.host_application.split('|')[1]
@@ -647,7 +633,6 @@ class AtSpiInterface(AbstractInterface):
     def __pumpEvents(self):
         pyatspi.Registry.pumpQueuedEvents()
         return True
-"""
     
 
 class MockMediator:

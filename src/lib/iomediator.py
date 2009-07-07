@@ -17,6 +17,7 @@
 
 X_RECORD_INTERFACE = "XRecord"
 X_EVDEV_INTERFACE = "XEvDev"
+ATSPI_INTERFACE = "AT-SPI"
 
 # Key codes enumeration
 class Key:
@@ -124,8 +125,10 @@ class IoMediator(threading.Thread):
     def __createInterface(self):
         if self.interfaceType == X_RECORD_INTERFACE:
             self.interface = XRecordInterface(self)
+        elif self.interfaceType == X_EVDEV_INTERFACE:
+            self.interface = EvDevInterface(self)    
         else:
-            self.interface = EvDevInterface(self)        
+            self.interface = AtSpiInterface(self)    
         
     def shutdown(self):
         self.interface.cancel()
