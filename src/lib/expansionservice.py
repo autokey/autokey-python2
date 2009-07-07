@@ -18,13 +18,25 @@
 
 import time, logging
 import iomediator, ui, configurationmanager
-from iomediator import Key, threaded
+from iomediator import Key
 from phrasemenu import *
 from plugin.manager import PluginManager, PluginError
 
 logger = logging.getLogger("phrase-service")
 
 MAX_STACK_LENGTH = 50
+
+def threaded(f):
+    
+    def wrapper(*args):
+        t = threading.Thread(target=f, args=args, name="Phrase-thread")
+        t.setDaemon(False)
+        t.start()
+        
+    wrapper.__name__ = f.__name__
+    wrapper.__dict__ = f.__dict__
+    wrapper.__doc__ = f.__doc__
+    return wrapper
 
 class ExpansionService:
     

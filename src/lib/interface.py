@@ -39,6 +39,8 @@ CONTROL_R = 'XK_Control_R'
 ALT = 'XK_Alt_L'
 ALT_GR = 'XK_Alt_R'
 SUPER = 'XK_Super_L'
+SUPER_R = 'XK_Super_R'
+NUMLOCK = 'XK_Num_Lock'
 
 # Misc Keys
 SPACE = 'XK_space'
@@ -49,6 +51,9 @@ UP = 'XK_Up'
 DOWN = 'XK_Down'
 RETURN = 'XK_Return'
 BACKSPACE = 'XK_BackSpace'
+SCROLL_LOCK = 'XK_Scroll_Lock'
+PRINT_SCREEN = 'XK_Print'
+PAUSE = 'XK_Pause'
 
 # Function Keys
 F1 = "XK_F1"
@@ -64,6 +69,24 @@ F10 = "XK_F10"
 F11 = "XK_F11"
 F12 = "XK_F12"
 
+# Keypad
+KP_INSERT = "XK_KP_Insert"
+KP_DELETE = "XK_KP_Delete"
+KP_END = "XK_KP_End"
+KP_DOWN = "XK_KP_Down"
+KP_PAGE_DOWN = "XK_KP_Page_Down"
+KP_LEFT = "XK_KP_Left"
+KP_5 = "XK_KP_5"
+KP_RIGHT = "XK_KP_Right"
+KP_HOME = "XK_KP_Home"
+KP_UP = "XK_KP_Up"
+KP_PAGE_UP = "XK_KP_Page_Up"
+KP_ENTER = "XK_KP_Enter"
+KP_ADD = "XK_KP_Add"
+KP_SUBTRACT = "XK_KP_Subtract"
+KP_MULTIPLY = "XK_KP_Multiply"
+KP_DIVIDE = "XK_KP_Divide"
+
 # Other
 ESCAPE = "XK_Escape"
 INSERT = "XK_Insert"
@@ -72,8 +95,6 @@ HOME = "XK_Home"
 END = "XK_End"
 PAGE_UP = "XK_Page_Up"
 PAGE_DOWN = "XK_Page_Down"
-
-
 
 
 class XInterfaceBase(threading.Thread):
@@ -99,6 +120,8 @@ class XInterfaceBase(threading.Thread):
         self.keyCodes = {}
         # Map of keycode to keyname
         self.keyNames = {}
+        # One-way numpad key map - we only decode them
+        self.numKeyNames = {}
         
         # Load xkb keysyms - related to non-US keyboard mappings
         XK.load_keysym_group('xkb')
@@ -115,8 +138,14 @@ class XInterfaceBase(threading.Thread):
             altGrCode = self.localDisplay.keysym_to_keycode(XK.XK_ISO_Level3_Shift)
             self.keyCodes[Key.ALT_GR] = altGrCode
             self.keyNames[altGrCode] = Key.ALT_GR 
-        
-        
+            
+        # Create map of numpad keycodes, similar to above
+        keyList = NUMPAD_MAP.keys()
+        for xkKeyName in keyList:
+            keyNames = NUMPAD_MAP[xkKeyName]
+            keyCode = self.localDisplay.keysym_to_keycode(getattr(XK, xkKeyName))
+            self.numKeyNames[keyCode] = keyNames
+       
         logger.debug("Keycodes dict: " + repr(self.keyCodes))
         if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
             self.keymap_test()
@@ -156,11 +185,20 @@ class XInterfaceBase(threading.Thread):
         #self.__sendKeyCode(keyCode, X.Mod5Mask)
         #print "Test complete. Now, please press the Alt-Gr key a few times (on its own)"
         
-    def lookup_string(self, keyCode, shifted):
+    def lookup_string(self, keyCode, shifted, numlock):
         if keyCode == 0:
             return "<unknown>"
-        if self.keyNames.has_key(keyCode):
+        
+        elif self.keyNames.has_key(keyCode):
             return self.keyNames[keyCode]
+            
+        elif self.numKeyNames.has_key(keyCode):
+            values = self.numKeyNames[keyCode]
+            if numlock:
+                return values[1]
+            else:
+                return values[0]
+                
         else:
             try:
                 if shifted:
@@ -260,7 +298,6 @@ class XInterfaceBase(threading.Thread):
             for x in range(self.localDisplay.pending_events()):
                 event = self.localDisplay.next_event()
                 if event.type == X.MappingNotify:
-                    logger.info("Received XMappingNotify")
                     self.__updateMapping(event)
         
         
@@ -293,7 +330,7 @@ class XInterfaceBase(threading.Thread):
         return None
     
     def __updateMapping(self, event):
-        logger.info("Got XMappingUpdate - reloading keyboard mapping")
+        logger.info("Got XMappingNotify - reloading keyboard mapping")
         self.localDisplay.refresh_keyboard_mapping(event)   
         self.__initMappings() 
     
@@ -431,8 +468,8 @@ class EvDevInterface(XInterfaceBase):
                     
             if button:
                 self.mediator.handle_mouse_click()
-        
-    
+
+
 class XRecordInterface(XInterfaceBase):
         
     def __init__(self, mediator, testMode=False):
@@ -503,6 +540,8 @@ KEY_MAP = {
            ALT : Key.ALT,
            ALT_GR : Key.ALT_GR,
            SUPER : Key.SUPER,
+           SUPER_R : Key.SUPER,
+           NUMLOCK : Key.NUMLOCK,
            SPACE : Key.SPACE,
            TAB : Key.TAB,
            LEFT : Key.LEFT,
@@ -511,6 +550,9 @@ KEY_MAP = {
            DOWN : Key.DOWN,
            RETURN : Key.RETURN,
            BACKSPACE : Key.BACKSPACE,
+           SCROLL_LOCK : Key.SCROLL_LOCK,
+           PRINT_SCREEN : Key.PRINT_SCREEN,
+           PAUSE : Key.PAUSE,
            F1 : Key.F1,
            F2 : Key.F2,
            F3 : Key.F3,
@@ -530,6 +572,25 @@ KEY_MAP = {
            END : Key.END,
            PAGE_UP : Key.PAGE_UP,
            PAGE_DOWN : Key.PAGE_DOWN           
+           }
+           
+NUMPAD_MAP = {
+           KP_INSERT : (Key.INSERT, "0"),
+           KP_DELETE : (Key.DELETE, "."),
+           KP_END : (Key.END, "1"),
+           KP_DOWN : (Key.DOWN, "2"),
+           KP_PAGE_DOWN : (Key.PAGE_DOWN, "3"),
+           KP_LEFT : (Key.LEFT, "4"),
+           KP_5 : ("<unknown>", "5"),
+           KP_RIGHT : (Key.RIGHT, "6"),
+           KP_HOME : (Key.HOME, "7"),
+           KP_UP: (Key.UP, "8"),
+           KP_PAGE_UP : (Key.PAGE_UP, "9"),
+           KP_DIVIDE : ("/", "/"),
+           KP_MULTIPLY : ("*", "*"),
+           KP_ADD : ("+", "+"),
+           KP_SUBTRACT : ("-", "-"),
+           KP_ENTER : (Key.RETURN, Key.RETURN),
            }
 
 """import pyatspi, gobject
