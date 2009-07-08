@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import gtk, gobject, pynotify, re, time, copy, webbrowser, os.path
-import phrase, phrasemenu, iomediator
+import phrase, phrasemenu, iomediator, interface
 from configurationmanager import *
 
 UI_DESCRIPTION_FILE = os.path.join(os.path.dirname(__file__), "data/menus.xml")
@@ -14,7 +14,7 @@ DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-APPLICATION_VERSION = "0.54.3"
+APPLICATION_VERSION = "0.54.4"
 
 def gthreaded(f):
     
@@ -191,6 +191,7 @@ class ConfigurationWindow(gtk.Window):
         
     def on_show_settings(self, widget, data=None):
         self.toggleExpansionsMenuItem.set_active(ConfigurationManager.SETTINGS[SERVICE_RUNNING])
+        self.toggleExpansionsMenuItem.set_sensitive(not self.app.serviceDisabled)
         
     def on_close(self, widget, data=None):
         if self.dirty:
@@ -517,6 +518,27 @@ class AdvancedSettingsDialog(gtk.Dialog):
         vbox.pack_start(self.showPopupSettings)
         self.add_page(vbox, "Special Hotkeys")
         
+        # Interface settings page
+        label = gtk.Label("Configure the method AutoKey uses to receive keyboard and mouse events.\n" +
+                          "Only change this option if AutoKey is not responding to abbreviations\nand hotkeys.\n\n" +
+                          "You will need to restart AutoKey for changes made here to take effect.")
+        label.set_alignment(0, 0.5)
+        self.xrecordInterface = gtk.RadioButton(None,
+                                "X Record - preferred option when using X.org server v1.5 or older")
+        self.evdevInterface = gtk.RadioButton(self.xrecordInterface,
+                                "X EvDev - preferred option when using X.org server v1.6 or newer")
+        self.atspiInterface = gtk.RadioButton(self.xrecordInterface,
+                                "AT-SPI - Fallback option for Gnome users when all other methods fail")
+        self.atspiInterface.set_sensitive(interface.HAS_ATSPI)
+        
+        vbox = gtk.VBox()
+        vbox.pack_start(label)
+        vbox.pack_start(gtk.HSeparator(), padding=10)
+        vbox.pack_start(self.xrecordInterface)
+        vbox.pack_start(self.evdevInterface)
+        vbox.pack_start(self.atspiInterface)
+        self.add_page(vbox, "Device Interface")
+        
         self.show_all()
         
     def load(self, configManager):
@@ -531,6 +553,10 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.showConfigSetting.load(configManager.configHotkey)
         self.toggleServiceSetting.load(configManager.toggleServiceHotkey)
         self.showPopupSettings.load(configManager.showPopupHotkey)
+
+        self.xrecordInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_RECORD_INTERFACE)
+        self.evdevInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_EVDEV_INTERFACE)
+        self.atspiInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.ATSPI_INTERFACE)
         
     def save(self, configManager):
         configManager.SETTINGS[SHOW_TRAY_ICON] = self.showInTray.get_active()
@@ -545,6 +571,13 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.toggleServiceSetting.save(configManager.toggleServiceHotkey)
         self.showPopupSettings.save(configManager.showPopupHotkey)
         
+        if self.xrecordInterface.get_active():
+            configManager.SETTINGS[INTERFACE_TYPE] = iomediator.X_RECORD_INTERFACE
+        elif self.evdevInterface.get_active():
+            configManager.SETTINGS[INTERFACE_TYPE] = iomediator.X_EVDEV_INTERFACE
+        else:
+            configManager.SETTINGS[INTERFACE_TYPE] = iomediator.ATSPI_INTERFACE 
+                
     def add_page(self, page, pageTitle):
         alignment = gtk.Alignment(xscale=1.0)
         alignment.set_padding(5, 5, 5, 5)
@@ -1443,6 +1476,7 @@ class Notifier(gobject.GObject):
         # Main Menu items
         enableMenuItem = gtk.CheckMenuItem("Enable Expansions")
         enableMenuItem.set_active(self.app.service.is_running())
+        enableMenuItem.set_sensitive(not self.app.serviceDisabled)
         
         configureMenuItem = gtk.ImageMenuItem("Configure")
         configureMenuItem.set_image(gtk.image_new_from_stock(gtk.STOCK_PREFERENCES, gtk.ICON_SIZE_MENU))  

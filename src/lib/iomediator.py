@@ -116,10 +116,6 @@ class IoMediator(threading.Thread):
                           Key.NUMLOCK : True
                           }
         
-    def initialise(self):
-        """
-        Starts the underlying keystroke interface sending and receiving events.
-        """
         if self.interfaceType == X_RECORD_INTERFACE:
             self.interface = XRecordInterface(self)
         elif self.interfaceType == X_EVDEV_INTERFACE:

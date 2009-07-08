@@ -41,21 +41,21 @@ def threaded(f):
 class ExpansionService:
     
     def __init__(self, app):
+        logger.info("Starting phrase service")
         self.configManager = app.configManager
+        self.configManager.SETTINGS[configurationmanager.SERVICE_RUNNING] = False
         self.interfaceType = self.configManager.SETTINGS[configurationmanager.INTERFACE_TYPE]
         self.mediator = None
         self.app = app
-    
-    def start(self):
-        logger.info("Starting phrase service")
-        self.mediator = iomediator.IoMediator(self, self.interfaceType)
-        self.mediator.initialise()
         self.inputStack = []
         self.lastStackState = ''
         self.lastMenu = None
         self.lastAbbr = None
         self.clearAfter = 0
         self.pluginManager = PluginManager()
+        
+    def start(self):
+        self.mediator = iomediator.IoMediator(self, self.interfaceType)
         self.configManager.SETTINGS[configurationmanager.SERVICE_RUNNING] = True
         logger.info("Phrase service now marked as running")
         
@@ -72,7 +72,7 @@ class ExpansionService:
             
     def shutdown(self):
         logger.info("Phrase service shutting down")
-        self.mediator.shutdown()
+        if self.mediator is not None: self.mediator.shutdown()
         configurationmanager.save_config(self.configManager)
             
     def handle_mouseclick(self):

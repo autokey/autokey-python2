@@ -165,8 +165,6 @@ class ConfigurationManager:
         self.showPopupHotkey.set_hotkey(["<ctrl>", "<shift>"], " ")
         self.showPopupHotkey.enabled = True
                 
-        # TODO TESTING REMOVE ME LATER
-        from iomediator import Key
         myPhrases = PhraseFolder("My Phrases")
         myPhrases.set_hotkey(["<ctrl>"], "<f7>")
         myPhrases.set_modes([PhraseMode.HOTKEY])

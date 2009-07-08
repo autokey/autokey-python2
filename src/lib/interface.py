@@ -19,6 +19,11 @@ __all__ = ["XRecordInterface", "EvDevInterface", "AtSpiInterface"]
 
 
 import os, threading, re, time, socket, select, logging
+try:
+    import pyatspi
+    HAS_ATSPI = True
+except ImportError:
+    HAS_ATSPI = False
 
 from Xlib import X, XK, display, error
 from Xlib.ext import record, xtest
@@ -528,13 +533,11 @@ class XRecordInterface(XInterfaceBase):
                 self._handleKeyRelease(event.detail)
             elif event.type == X.ButtonPress:
                 self.mediator.handle_mouse_click()
-            
 
 class AtSpiInterface(XInterfaceBase):
     
     def __init__(self, mediator, testMode=False):
         XInterfaceBase.__init__(self, mediator, testMode)
-        import pyatspi
         self.registry = pyatspi.Registry        
         
     def start(self):

@@ -61,7 +61,7 @@ class AutoKeyApplication:
             
         except Exception, e:
             self.show_error_dialog("Fatal error starting AutoKey.\n" + str(e))
-            logging.exception("Fatal error starting AutoKey; " + str(e))
+            logging.exception("Fatal error starting AutoKey: " + str(e))
             sys.exit(1)
             
     def __createLockFile(self):
@@ -73,7 +73,15 @@ class AutoKeyApplication:
         logging.info("Initialising application")
         self.configManager = configurationmanager.get_config_manager(self)
         self.service = expansionservice.ExpansionService(self)
-        self.service.start()
+        self.serviceDisabled = False
+        
+        try:
+            self.service.start()
+        except Exception, e:
+            logging.exception("Error starting interface: " + str(e))
+            self.serviceDisabled = True
+            self.show_error_dialog("Error starting interface. Keyboard monitoring will be disabled.\n" +
+                                    "Check your system/configuration.\n" + str(e))
         
         signal.signal(signal.SIGTERM, self.shutdown)
         
