@@ -2,9 +2,12 @@ autokey (0.54.4-0~jaunty) jaunty; urgency=low
 
    Add support for numpad keys, and a few other standard keys that were not handled
    Add AT-SPI interface
-   Add ability to choose interface by setting AUTOKEY_INTERFACE environment variable
+   Add configuration screen to choose interface type (requires restart)
+   Make tooltip display 'running' or 'paused' depending on service status
+   Fix hotkeys not working if Capslock or Numlock are on
+   Get rid of interface switching code
     
- -- Chris Dekter <cdekter@gmail.com>  Tue, 7 Jul 2009 20:38:05 +1000
+ -- Chris Dekter <cdekter@gmail.com>  Wed, 8 Jul 2009 20:38:05 +1000
 
 autokey (0.54.3-0~jaunty) jaunty; urgency=low
 

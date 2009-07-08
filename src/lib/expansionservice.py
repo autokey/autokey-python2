@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import time, logging, os
+import time, logging, threading
 import iomediator, ui, configurationmanager
 from iomediator import Key
 from phrasemenu import *
@@ -41,14 +41,8 @@ def threaded(f):
 class ExpansionService:
     
     def __init__(self, app):
-        # Read configuration
         self.configManager = app.configManager
-        interface = os.getenv("AUTOKEY_INTERFACE", iomediator.X_EVDEV_INTERFACE)
-        if interface not in iomediator.INTERFACES:
-            logger.info("Invalid interface type, defaulting to XEvDev")
-            interface = iomediator.X_EVDEV_INTERFACE
-        logger.info("Setting interface type to '%s'", interface)
-        self.interfaceType = interface
+        self.interfaceType = self.configManager.SETTINGS[configurationmanager.INTERFACE_TYPE]
         self.mediator = None
         self.app = app
     
@@ -70,32 +64,11 @@ class ExpansionService:
         logger.info("Unpausing - phrase service now marked as running")
         
     def pause(self):
-        #self.mediator.pause()
         self.configManager.SETTINGS[configurationmanager.SERVICE_RUNNING] = False
         logger.info("Pausing - phrase service now marked as stopped")
         
     def is_running(self):
-        #if self.mediator is not None:
-        #    return self.mediator.is_running()
-        #else:
-        #    return False
         return self.configManager.SETTINGS[configurationmanager.SERVICE_RUNNING]
-        
-    def switch_method(self, interface):
-        """
-        Switch keystroke interface to the new type
-        """
-        if self.is_running():
-            self.pause()
-            restart = True
-        else:
-            restart = False
-        
-        self.interfaceType = interface
-        self.mediator.switch_interface(self.interfaceType)
-        
-        if restart:
-            self.unpause()
             
     def shutdown(self):
         logger.info("Phrase service shutting down")
@@ -103,14 +76,13 @@ class ExpansionService:
         configurationmanager.save_config(self.configManager)
             
     def handle_mouseclick(self):
-        # Initial attempt at handling mouseclicks
-        # Since we have no way of knowing where the caret is after the click,
-        # just throw away the input buffer.
         logger.debug("Received mouse click - resetting buffer")        
         self.inputStack = []
         
     def handle_hotkey(self, key, modifiers, windowName):
         logger.debug("Phrase service received hotkey")
+        logger.debug("Key: %s, modifiers: %s", repr(key), repr(modifiers))
+        
         # Always check global hotkeys
         for hotkey in self.configManager.globalHotkeys:
             hotkey.check_hotkey(modifiers, key, windowName)
@@ -124,6 +96,7 @@ class ExpansionService:
             
             # Check for a phrase match first
             for phrase in self.configManager.hotKeyPhrases:
+                logger.debug("Phrase %s checking hotkey", str(phrase))
                 if phrase.check_hotkey(modifiers, key, windowName):
                     phraseMatch = phrase
                     break
@@ -137,7 +110,9 @@ class ExpansionService:
                     menu = PhraseMenu(self, [], [phraseMatch])
                     
             else:
+                logger.debug("No phrase matched hotkey")
                 for folder in self.configManager.hotKeyFolders:
+                    logger.debug("Folder %s checking hotkey", str(folder))
                     if folder.check_hotkey(modifiers, key, windowName):
                         folderMatch = folder
                         break                    
@@ -145,6 +120,8 @@ class ExpansionService:
                 if folderMatch is not None:
                     logger.info("Matched hotkey folder - displaying")
                     menu = PhraseMenu(self, [folderMatch], [])
+                else:
+                    logger.debug("No folder matched hotkey")
                 
             if menu is not None:
                 if self.lastMenu is not None:
@@ -152,7 +129,6 @@ class ExpansionService:
                 self.lastStackState = ''
                 self.lastMenu = menu
                 self.lastMenu.show_on_desktop()
-
     
     def handle_keypress(self, key, windowName=""):
         # TODO - this method is really monolithic - refactor into several smaller ones

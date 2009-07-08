@@ -120,32 +120,19 @@ class IoMediator(threading.Thread):
         """
         Starts the underlying keystroke interface sending and receiving events.
         """
-        self.__createInterface()
-        self.interface.start()
-        self.start()
-        
-    def __createInterface(self):
         if self.interfaceType == X_RECORD_INTERFACE:
             self.interface = XRecordInterface(self)
         elif self.interfaceType == X_EVDEV_INTERFACE:
             self.interface = EvDevInterface(self)    
         else:
             self.interface = AtSpiInterface(self)    
+        self.interface.start()
+        self.start()
         
     def shutdown(self):
         self.interface.cancel()
         self.queue.put_nowait((None, None))
-        
-    def switch_interface(self, interface):
-        """
-        Switch the interface being used to receive and send key events to the
-        given interface type.
-        """
-        self.interface.cancel()
-        self.interfaceType = interface
-        self.__createInterface()
-        self.interface.start()
-        
+
     # Callback methods for Interfaces ----
     
     def handle_modifier_down(self, modifier):
@@ -184,13 +171,9 @@ class IoMediator(threading.Thread):
             if keyCode is None and windowName is None:
                 break
             
-            if self.__isNonPrintingModifierOn():
+            modifiers = self.__getNonPrintingModifiersOn()
+            if modifiers:
                 key = self.interface.lookup_string(keyCode, False, numLock)
-                modifiers = []
-                for modifier, isOn in self.modifiers.iteritems():
-                    if isOn:
-                        modifiers.append(modifier)
-                modifiers.sort()
                 
                 _logger.debug("[%s]", key)
                 for target in self.listeners:
@@ -319,12 +302,14 @@ class IoMediator(threading.Thread):
         for modifier in self.releasedModifiers:
             self.interface.press_key(modifier)
             
-    def __isNonPrintingModifierOn(self):
+    def __getNonPrintingModifiersOn(self):
+        modifiers = []
         for modifier in NON_PRINTING_MODIFIERS:
             if self.modifiers[modifier]:
-                return True
+                modifiers.append(modifier)
         
-        return False
+        modifiers.sort()
+        return modifiers
     
 if __name__ == "__main__":
     pass

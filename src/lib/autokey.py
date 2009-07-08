@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2008 Chris Dekter
 
@@ -96,12 +97,14 @@ class AutoKeyApplication:
         """
         Unpause the expansion service (start responding to keyboard and mouse events).
         """
+        self.notifier.set_tooltip(ui.TOOLTIP_RUNNING)
         self.service.unpause()
     
     def pause_service(self):
         """
         Pause the expansion service (stop responding to keyboard and mouse events).
         """
+        self.notifier.set_tooltip(ui.TOOLTIP_PAUSED)
         self.service.pause()
         
     def toggle_service(self):

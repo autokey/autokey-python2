@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import gtk, gobject, pynotify, re, time, copy, webbrowser, os.path
 import phrase, phrasemenu, iomediator
 from configurationmanager import *
@@ -9,6 +10,9 @@ CONFIG_WINDOW_TITLE = "AutoKey Configuration"
 FAQ_URL = "http://autokey.wiki.sourceforge.net/FAQ"
 HELP_URL = "http://autokey.wiki.sourceforge.net/manual"
 DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
+
+TOOLTIP_RUNNING = "AutoKey - running"
+TOOLTIP_PAUSED = "AutoKey - paused"
 
 APPLICATION_VERSION = "0.54.3"
 
@@ -1412,7 +1416,10 @@ class Notifier(gobject.GObject):
         
         if ConfigurationManager.SETTINGS[SHOW_TRAY_ICON]:
             self.icon = gtk.status_icon_new_from_file(ICON_FILE)
-            self.icon.set_tooltip("AutoKey")
+            if ConfigurationManager.SETTINGS[SERVICE_RUNNING]:
+                self.icon.set_tooltip(TOOLTIP_RUNNING)
+            else:
+                self.icon.set_tooltip(TOOLTIP_PAUSED)
             self.icon.connect("popup_menu", self.on_popup_menu)
             self.icon.connect("activate", self.on_activate)
             
@@ -1422,7 +1429,10 @@ class Notifier(gobject.GObject):
         if isError:
             self.emit("show-notify", message, details, gtk.STOCK_DIALOG_ERROR)
         else:
-            self.emit("show-notify", message, details, gtk.STOCK_DIALOG_INFO)      
+            self.emit("show-notify", message, details, gtk.STOCK_DIALOG_INFO)
+            
+    def set_tooltip(self, tooltip):
+        self.icon.set_tooltip(tooltip)
         
     # Signal Handlers ----
     

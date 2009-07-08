@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2008 Chris Dekter
 
@@ -17,6 +18,7 @@
 
 import os.path, shutil, configobj, logging
 import cPickle as pickle
+import iomediator
 
 _logger = logging.getLogger("config-manager")
 
@@ -35,6 +37,7 @@ PROMPT_TO_SAVE = "promptToSave"
 PREDICTIVE_LENGTH = "predictiveLength"
 INPUT_SAVINGS = "inputSavings"
 ENABLE_QT4_WORKAROUND = "enableQT4Workaround"
+INTERFACE_TYPE = "interfaceType"
 
 def get_config_manager(autoKeyApp):
     if os.path.exists(CONFIG_FILE):
@@ -90,7 +93,29 @@ def apply_settings(settings):
     Allows new settings to be added without users having to lose all their configuration
     """
     for key, value in settings.iteritems():
-        ConfigurationManager.SETTINGS[key] = value    
+        ConfigurationManager.SETTINGS[key] = value
+        
+def _chooseInterface():
+    # Choose a sensible default interface type. Get Xorg version to determine this:
+    try:
+        f = open("/var/log/Xorg.0.log", "r")
+        for x in range(2):
+            versionLine = f.readline()
+            if "X Server" in versionLine:
+                break
+        f.close()
+        versionLine = versionLine.strip()
+        version = versionLine.split(" ")[-1]
+        minorVersion = version.split(".")[1]
+    except:
+        minorVersion = None
+        
+    if minorVersion is None:
+        return iomediator.X_EVDEV_INTERFACE
+    elif minorVersion < 6:
+        return iomediator.X_RECORD_INTERFACE
+    else:
+        return iomediator.X_EVDEV_INTERFACE
 
 class ImportException(Exception):
     """
@@ -118,13 +143,14 @@ class ConfigurationManager:
                 PROMPT_TO_SAVE: True,
                 PREDICTIVE_LENGTH : 5,
                 INPUT_SAVINGS : 0,
-                ENABLE_QT4_WORKAROUND : False
+                ENABLE_QT4_WORKAROUND : False,
+                INTERFACE_TYPE : _chooseInterface()
                 }
     
     def __init__(self, app):
         """
         Create initial default configuration
-        """        
+        """ 
         self.app = app
         self.folders = {}
         self.configHotkey = GlobalHotkey()
@@ -232,7 +258,6 @@ class ConfigurationManager:
             if PhraseMode.ABBREVIATION in phrase.modes:
                 self.abbrPhrases.append(phrase)
             self.allPhrases.append(phrase)
-
         
     def import_legacy_settings(self, configFilePath):
         """
