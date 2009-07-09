@@ -26,6 +26,7 @@ CONFIG_FILE = os.path.expanduser("~/.config/autokey/autokey.bin")
 CONFIG_FILE_BACKUP = CONFIG_FILE + '~'
 
 DEFAULT_ABBR_FOLDER = "Imported Abbreviations"
+RECENT_ENTRIES_FOLDER = "Recently Typed"
 
 IS_FIRST_RUN = "isFirstRun"
 SERVICE_RUNNING = "serviceRunning"
@@ -38,11 +39,15 @@ PREDICTIVE_LENGTH = "predictiveLength"
 INPUT_SAVINGS = "inputSavings"
 ENABLE_QT4_WORKAROUND = "enableQT4Workaround"
 INTERFACE_TYPE = "interfaceType"
+TRACK_RECENT_ENTRY = "trackRecentEntry"
+RECENT_ENTRY_COUNT = "recentEntryCount"
+RECENT_ENTRY_MINLENGTH = "recentEntryMinLength"
+RECENT_ENTRY_SUGGEST = "recentEntrySuggest"
 
 def get_config_manager(autoKeyApp):
     if os.path.exists(CONFIG_FILE):
         _logger.info("Loading config from existing file: " + CONFIG_FILE)
-        pFile = open(CONFIG_FILE, 'r')
+        pFile = open(CONFIG_FILE, 'rb')
         settings, configManager = pickle.load(pFile)
         pFile.close()
         apply_settings(settings)
@@ -55,6 +60,7 @@ def get_config_manager(autoKeyApp):
             configManager.showPopupHotkey.enabled = True
             configManager.globalHotkeys.append(configManager.showPopupHotkey)
         autoKeyApp.init_global_hotkeys(configManager)
+        
         _logger.info("Successfully loaded configuration file")
         _logger.debug("Global settings: " + repr(ConfigurationManager.SETTINGS))
         return configManager
@@ -144,9 +150,13 @@ class ConfigurationManager:
                 PREDICTIVE_LENGTH : 5,
                 INPUT_SAVINGS : 0,
                 ENABLE_QT4_WORKAROUND : False,
-                INTERFACE_TYPE : _chooseInterface()
+                INTERFACE_TYPE : _chooseInterface(),
+                TRACK_RECENT_ENTRY : True,
+                RECENT_ENTRY_COUNT : 5,
+                RECENT_ENTRY_MINLENGTH : 10,
+                RECENT_ENTRY_SUGGEST : True
                 }
-    
+                
     def __init__(self, app):
         """
         Create initial default configuration
@@ -182,8 +192,7 @@ class ConfigurationManager:
         myPhrases.add_phrase(p)
         
         p1 = Phrase("Positioning Phrase", "[udc]$(cursor )[/udc]\nBlah")
-        p1.set_modes([PhraseMode.ABBREVIATION, PhraseMode.HOTKEY])
-        p1.set_hotkey(["<ctrl>"], 'j')
+        p1.set_modes([PhraseMode.ABBREVIATION])
         p1.set_abbreviation("udc")
         p1.showInTrayMenu = True
         p1.immediate = True
@@ -198,6 +207,8 @@ class ConfigurationManager:
         trayPhrases.add_phrase(Phrase("Second phrase", "Test phrase number two!"))
         trayPhrases.add_phrase(Phrase("Third phrase", "Test phrase number three!"))
         self.folders[trayPhrases.title] = trayPhrases
+        
+        self.recentEntries = []
         
         self.config_altered()
             
@@ -232,13 +243,13 @@ class ConfigurationManager:
         self.globalHotkeys.append(self.configHotkey)
         self.globalHotkeys.append(self.toggleServiceHotkey)
         self.globalHotkeys.append(self.showPopupHotkey)
-        _logger.debug("Global hotkeys: " + repr(self.globalHotkeys))
+        _logger.debug("Global hotkeys: %s", self.globalHotkeys)
         
-        _logger.debug("Hotkey folders: " + repr(self.hotKeyFolders))
-        _logger.debug("Hotkey phrases: " + repr(self.hotKeyPhrases))
-        _logger.debug("Abbreviation phrases: " + repr(self.abbrPhrases))
-        _logger.debug("All folders: " + repr(self.allFolders))
-        _logger.debug("All phrases: " + repr(self.allPhrases))
+        _logger.debug("Hotkey folders: %s", self.hotKeyFolders)
+        _logger.debug("Hotkey phrases: %s", self.hotKeyPhrases)
+        _logger.debug("Abbreviation phrases: %s", self.abbrPhrases)
+        _logger.debug("All folders: %s", self.allFolders)
+        _logger.debug("All phrases: %s", self.allPhrases)
         
         save_config(self)
                     
@@ -256,6 +267,38 @@ class ConfigurationManager:
             if PhraseMode.ABBREVIATION in phrase.modes:
                 self.abbrPhrases.append(phrase)
             self.allPhrases.append(phrase)
+            
+    def add_recent_entry(self, entry):
+        if not self.folders.has_key(RECENT_ENTRIES_FOLDER):
+            folder = PhraseFolder(RECENT_ENTRIES_FOLDER)
+            folder.set_hotkey(["<super>"], "<f7>")
+            folder.set_modes([PhraseMode.HOTKEY])
+            self.folders[RECENT_ENTRIES_FOLDER] = folder
+            self.recentEntries = []
+        
+        folder = self.folders[RECENT_ENTRIES_FOLDER]
+        
+        
+        if not entry in self.recentEntries:
+            self.recentEntries.append(entry)
+            while len(self.recentEntries) > self.SETTINGS[RECENT_ENTRY_COUNT]:
+                self.recentEntries.pop(0)
+
+            folder.phrases = []
+            
+            for theEntry in self.recentEntries:
+                if len(theEntry) > 17:
+                    description = theEntry[:17] + "..."
+                else:
+                    description = theEntry
+            
+                p = Phrase(description, theEntry)
+                if self.SETTINGS[RECENT_ENTRY_SUGGEST]:
+                    p.set_modes([PhraseMode.PREDICTIVE])
+            
+                folder.add_phrase(p)
+                
+            self.config_altered()
         
     def import_legacy_settings(self, configFilePath):
         """

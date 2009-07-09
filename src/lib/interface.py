@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2008 Chris Dekter
 
@@ -151,7 +152,7 @@ class XInterfaceBase(threading.Thread):
             keyCode = self.localDisplay.keysym_to_keycode(getattr(XK, xkKeyName))
             self.numKeyNames[keyCode] = keyNames
        
-        logger.debug("Keycodes dict: " + repr(self.keyCodes))
+        logger.debug("Keycodes dict: %s", self.keyCodes)
         if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
             self.keymap_test()
         
@@ -167,7 +168,7 @@ class XInterfaceBase(threading.Thread):
             if len(keyCodeList) > 0:
                 #keyCode, offset = keyCodeList[0]
                 #print "[%s], %d, %d" % (char, keyCode, offset)
-                logger.debug("[%s] : %s", char, repr(keyCodeList))
+                logger.debug("[%s] : %s", char, keyCodeList)
             else:
                 logger.debug("No mapping for [%s]", char)
                 
@@ -253,7 +254,7 @@ class XInterfaceBase(threading.Thread):
         """
         Send a modified key (e.g. when emulating a hotkey)
         """
-        logger.debug("Send modified key: modifiers: %s key: %s", repr(modifiers), keyName)
+        logger.debug("Send modified key: modifiers: %s key: %s", modifiers, keyName)
         for modifier in modifiers:
             modifierCode = self.keyCodes[modifier.lower()]
             xtest.fake_input(self.rootWindow, X.KeyPress, modifierCode)

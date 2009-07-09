@@ -14,7 +14,7 @@ DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-APPLICATION_VERSION = "0.54.4"
+APPLICATION_VERSION = "0.55.0"
 
 def gthreaded(f):
     
@@ -518,15 +518,38 @@ class AdvancedSettingsDialog(gtk.Dialog):
         vbox.pack_start(self.showPopupSettings)
         self.add_page(vbox, "Special Hotkeys")
         
+        # Recently typed page
+        self.useRecentEntries = gtk.CheckButton("Collect recently typed entries")
+        self.predictRecentEntries = gtk.CheckButton("Suggest recent entries using predictive mode")
+        
+        hboxStore = gtk.HBox()
+        hboxStore.pack_start(gtk.Label("Store up to "), False)
+        self.recentEntryCount = gtk.SpinButton(gtk.Adjustment(5, 1, 20, 1))
+        hboxStore.pack_start(self.recentEntryCount, False)
+        hboxStore.pack_start(gtk.Label(" recent entries"), False)        
+        
+        hboxLength = gtk.HBox()
+        hboxLength.pack_start(gtk.Label("Minimum length of entries to collect: "), False)
+        self.recentEntryLength = gtk.SpinButton(gtk.Adjustment(10, 10, 50, 1))
+        hboxLength.pack_start(self.recentEntryLength, False)
+        
+        vbox = gtk.VBox()
+        vbox.pack_start(self.useRecentEntries)
+        vbox.pack_start(gtk.HSeparator(), padding=10)
+        vbox.pack_start(self.predictRecentEntries)
+        vbox.pack_start(hboxStore, False, False, 5)
+        vbox.pack_start(hboxLength, False, False, 5)
+        self.add_page(vbox, "Recently Typed")
+        
         # Interface settings page
         label = gtk.Label("Configure the method AutoKey uses to receive keyboard and mouse events.\n" +
                           "Only change this option if AutoKey is not responding to abbreviations\nand hotkeys.\n\n" +
                           "You will need to restart AutoKey for changes made here to take effect.")
         label.set_alignment(0, 0.5)
         self.xrecordInterface = gtk.RadioButton(None,
-                                "X Record - preferred option when using X.org server v1.5 or older")
+                                "X Record - Preferred option when using X.org server v1.5 or older")
         self.evdevInterface = gtk.RadioButton(self.xrecordInterface,
-                                "X EvDev - preferred option when using X.org server v1.6 or newer")
+                                "X EvDev - Preferred option when using X.org server v1.6 or newer")
         self.atspiInterface = gtk.RadioButton(self.xrecordInterface,
                                 "AT-SPI - Fallback option for Gnome users when all other methods fail")
         self.atspiInterface.set_sensitive(interface.HAS_ATSPI)
@@ -553,6 +576,11 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.showConfigSetting.load(configManager.configHotkey)
         self.toggleServiceSetting.load(configManager.toggleServiceHotkey)
         self.showPopupSettings.load(configManager.showPopupHotkey)
+        
+        self.useRecentEntries.set_active(configManager.SETTINGS[TRACK_RECENT_ENTRY])
+        self.predictRecentEntries.set_active(configManager.SETTINGS[RECENT_ENTRY_SUGGEST])
+        self.recentEntryCount.set_value(configManager.SETTINGS[RECENT_ENTRY_COUNT])
+        self.recentEntryLength.set_value(configManager.SETTINGS[RECENT_ENTRY_MINLENGTH])
 
         self.xrecordInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_RECORD_INTERFACE)
         self.evdevInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_EVDEV_INTERFACE)
@@ -570,6 +598,11 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.showConfigSetting.save(configManager.configHotkey)
         self.toggleServiceSetting.save(configManager.toggleServiceHotkey)
         self.showPopupSettings.save(configManager.showPopupHotkey)
+        
+        configManager.SETTINGS[TRACK_RECENT_ENTRY] = self.useRecentEntries.get_active()
+        configManager.SETTINGS[RECENT_ENTRY_SUGGEST] = self.predictRecentEntries.get_active()
+        configManager.SETTINGS[RECENT_ENTRY_COUNT] = int(self.recentEntryCount.get_value())
+        configManager.SETTINGS[RECENT_ENTRY_MINLENGTH] = int(self.recentEntryLength.get_value())
         
         if self.xrecordInterface.get_active():
             configManager.SETTINGS[INTERFACE_TYPE] = iomediator.X_RECORD_INTERFACE
