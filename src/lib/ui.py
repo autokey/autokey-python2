@@ -4,7 +4,7 @@ import phrase, phrasemenu, iomediator, interface
 from configurationmanager import *
 
 UI_DESCRIPTION_FILE = os.path.join(os.path.dirname(__file__), "data/menus.xml")
-ICON_FILE = "/usr/share/icons/autokeyicon.svg"
+ICON_FILE = "/usr/share/pixmaps/autokeyicon.svg"
 CONFIG_WINDOW_TITLE = "AutoKey Configuration"
 
 FAQ_URL = "http://autokey.wiki.sourceforge.net/FAQ"
