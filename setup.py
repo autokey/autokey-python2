@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2008 Chris Dekter
 
@@ -19,7 +20,7 @@ from distutils.core import setup
 
 setup(
       name="autokey",
-      version="0.54.4", 
+      version="0.55.0", 
       author="Chris Dekter",
       author_email="cdekter@gmail.com",
       url="http://autokey.sourceforge.net/",
