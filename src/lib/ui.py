@@ -14,7 +14,7 @@ DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-APPLICATION_VERSION = "0.55.0"
+APPLICATION_VERSION = "0.54.4"
 
 def gthreaded(f):
     
@@ -371,7 +371,16 @@ class ConfigurationWindow(gtk.Window):
             return True
         else:
             if event.button == 3:
-                self.__popupMenu(event)
+                x = int(event.x)
+                y = int(event.y)
+                time = event.time
+                pthinfo = widget.get_path_at_pos(x, y)
+                if pthinfo is not None:
+                    path, col, cellx, celly = pthinfo
+                    widget.grab_focus()
+                    widget.set_cursor(path, col, 0)
+                    self.__popupMenu(event)
+                return True
 
     def __popupMenu(self, event):
         selection = self.__getTreeSelection()            
@@ -518,29 +527,6 @@ class AdvancedSettingsDialog(gtk.Dialog):
         vbox.pack_start(self.showPopupSettings)
         self.add_page(vbox, "Special Hotkeys")
         
-        # Recently typed page
-        self.useRecentEntries = gtk.CheckButton("Collect recently typed entries")
-        self.predictRecentEntries = gtk.CheckButton("Suggest recent entries using predictive mode")
-        
-        hboxStore = gtk.HBox()
-        hboxStore.pack_start(gtk.Label("Store up to "), False)
-        self.recentEntryCount = gtk.SpinButton(gtk.Adjustment(5, 1, 20, 1))
-        hboxStore.pack_start(self.recentEntryCount, False)
-        hboxStore.pack_start(gtk.Label(" recent entries"), False)        
-        
-        hboxLength = gtk.HBox()
-        hboxLength.pack_start(gtk.Label("Minimum length of entries to collect: "), False)
-        self.recentEntryLength = gtk.SpinButton(gtk.Adjustment(10, 10, 50, 1))
-        hboxLength.pack_start(self.recentEntryLength, False)
-        
-        vbox = gtk.VBox()
-        vbox.pack_start(self.useRecentEntries)
-        vbox.pack_start(gtk.HSeparator(), padding=10)
-        vbox.pack_start(self.predictRecentEntries)
-        vbox.pack_start(hboxStore, False, False, 5)
-        vbox.pack_start(hboxLength, False, False, 5)
-        self.add_page(vbox, "Recently Typed")
-        
         # Interface settings page
         label = gtk.Label("Configure the method AutoKey uses to receive keyboard and mouse events.\n" +
                           "Only change this option if AutoKey is not responding to abbreviations\nand hotkeys.\n\n" +
@@ -577,11 +563,6 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.toggleServiceSetting.load(configManager.toggleServiceHotkey)
         self.showPopupSettings.load(configManager.showPopupHotkey)
         
-        self.useRecentEntries.set_active(configManager.SETTINGS[TRACK_RECENT_ENTRY])
-        self.predictRecentEntries.set_active(configManager.SETTINGS[RECENT_ENTRY_SUGGEST])
-        self.recentEntryCount.set_value(configManager.SETTINGS[RECENT_ENTRY_COUNT])
-        self.recentEntryLength.set_value(configManager.SETTINGS[RECENT_ENTRY_MINLENGTH])
-
         self.xrecordInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_RECORD_INTERFACE)
         self.evdevInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_EVDEV_INTERFACE)
         self.atspiInterface.set_active(configManager.SETTINGS[INTERFACE_TYPE] == iomediator.ATSPI_INTERFACE)
@@ -598,11 +579,6 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.showConfigSetting.save(configManager.configHotkey)
         self.toggleServiceSetting.save(configManager.toggleServiceHotkey)
         self.showPopupSettings.save(configManager.showPopupHotkey)
-        
-        configManager.SETTINGS[TRACK_RECENT_ENTRY] = self.useRecentEntries.get_active()
-        configManager.SETTINGS[RECENT_ENTRY_SUGGEST] = self.predictRecentEntries.get_active()
-        configManager.SETTINGS[RECENT_ENTRY_COUNT] = int(self.recentEntryCount.get_value())
-        configManager.SETTINGS[RECENT_ENTRY_MINLENGTH] = int(self.recentEntryLength.get_value())
         
         if self.xrecordInterface.get_active():
             configManager.SETTINGS[INTERFACE_TYPE] = iomediator.X_RECORD_INTERFACE
