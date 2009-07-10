@@ -639,7 +639,7 @@ class PhraseFolderSettings(gtk.VBox):
         
     def load(self, theFolder):
         self.currentFolder = theFolder
-        self.folderTitle.set_text(theFolder.title)
+        self.folderTitle.set_text(theFolder.title.encode("utf-8"))
         self.showInTray.set_active(theFolder.showInTrayMenu)
         self.settingsNoteBook.load(theFolder)
         self.folderTitle.grab_focus()
@@ -656,7 +656,7 @@ class PhraseFolderSettings(gtk.VBox):
         
     def save(self):
         if self.validate():
-            self.currentFolder.title = self.folderTitle.get_text()
+            self.currentFolder.title = self.folderTitle.get_text().decode("utf-8")
             self.currentFolder.set_modes([])
             self.currentFolder.showInTrayMenu = self.showInTray.get_active()
             self.settingsNoteBook.save(self.currentFolder)
@@ -745,9 +745,9 @@ class PhraseSettings(gtk.VBox):
         
     def load(self, thePhrase):
         self.currentPhrase = thePhrase
-        self.phraseDescription.set_text(thePhrase.description)
+        self.phraseDescription.set_text(thePhrase.description.encode("utf-8"))
         buffer = gtk.TextBuffer()
-        buffer.set_text(thePhrase.phrase)
+        buffer.set_text(thePhrase.phrase.encode("utf-8"))
         buffer.connect("changed", self.on_modified)
         self.phraseContents.set_buffer(buffer)
         self.predictive.set_active(phrase.PhraseMode.PREDICTIVE in thePhrase.modes)
@@ -768,10 +768,11 @@ class PhraseSettings(gtk.VBox):
         
     def save(self):
         if self.validate():
-            self.currentPhrase.description = self.phraseDescription.get_text()
+            self.currentPhrase.description = self.phraseDescription.get_text().decode("utf-8")
         
             buffer = self.phraseContents.get_buffer()
-            self.currentPhrase.phrase = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter())
+            self.currentPhrase.phrase = buffer.get_text(buffer.get_start_iter(),
+                                                         buffer.get_end_iter()).decode("utf-8")
         
             self.currentPhrase.set_modes([])
             if self.predictive.get_active():
@@ -925,7 +926,7 @@ class AbbreviationSettings(gtk.VBox):
     def load(self, thePhrase):
         
         if thePhrase.abbreviation is not None:
-            self.abbrText.set_text(thePhrase.abbreviation)
+            self.abbrText.set_text(thePhrase.abbreviation.encode("utf-8"))
         else:
             self.abbrText.set_text("")
         self.removeTyped.set_active(thePhrase.backspace)
@@ -941,7 +942,7 @@ class AbbreviationSettings(gtk.VBox):
     def save(self, thePhrase):
         if self.useAbbr.get_active():
             thePhrase.modes.append(phrase.PhraseMode.ABBREVIATION) 
-            thePhrase.abbreviation = self.abbrText.get_text()
+            thePhrase.abbreviation = self.abbrText.get_text().decode("utf-8")
             thePhrase.backspace = self.removeTyped.get_active()
             thePhrase.omitTrigger = self.omitTrigger.get_active()
             thePhrase.matchCase = self.matchCase.get_active()
@@ -1058,7 +1059,7 @@ class FolderAbbreviationSettings(AbbreviationSettings):
     def load(self, theFolder):
         self.useAbbr.set_active(phrase.PhraseMode.ABBREVIATION in theFolder.modes)
         if theFolder.abbreviation is not None:
-            self.abbrText.set_text(theFolder.abbreviation)
+            self.abbrText.set_text(theFolder.abbreviation.encode("utf-8"))
         else:
             self.abbrText.set_text("")
         self.removeTyped.set_active(theFolder.backspace)
@@ -1069,7 +1070,7 @@ class FolderAbbreviationSettings(AbbreviationSettings):
     def save(self, theFolder):
         if self.useAbbr.get_active():
             theFolder.modes.append(phrase.PhraseMode.ABBREVIATION) 
-            theFolder.abbreviation = self.abbrText.get_text()
+            theFolder.abbreviation = self.abbrText.get_text().decode("utf-8")
             theFolder.backspace = self.removeTyped.get_active()
             theFolder.triggerInside = self.triggerInside.get_active()
             theFolder.immediate = self.immediate.get_active()
