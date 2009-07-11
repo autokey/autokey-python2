@@ -215,8 +215,7 @@ class XInterfaceBase(threading.Thread):
             try:
                 index = 0
                 if shifted: index += 1 
-                if altGrid: index += 4   
-                print index         
+                if altGrid: index += 4  
                 return unichr(self.localDisplay.keycode_to_keysym(keyCode, index))
             except ValueError:
                 return "<code%d>" % keyCode
