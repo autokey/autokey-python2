@@ -1,12 +1,19 @@
-autokey (0.54.5-0~jaunty) UNRELEASED; urgency=low
+autokey (0.54.5-0~karmic) karmic; urgency=low
 
+  [ Chris Dekter ]
+  * Fix bug where daemon dies after resuming from suspend
+  * Improve evdev interface so it tries to reconnect if connection to the daemon is lost
+  * Fix spurious 'already running' warnings when lockfile exists and pid is valid but
+    is not the autokey process
+    
+  [ Luke Faraone ]
   * debian/control: Changed Arch:Any to all since we don't build
     platform-specific binaries
   * debian/control: Bump standards version to 3.8.2
   * Remove redundant encoding in .desktop file which is deprecated in latest
     Freedesktop.org spec
 
- -- Luke Faraone <luke@faraone.cc>  Sun, 12 Jul 2009 17:55:46 -0400
+ -- Chris Dekter <cdekter@gmail.com>  Tue, 21 Jul 2009 09:55:46 +1000
 
 autokey (0.54.4-0~jaunty) jaunty; urgency=low
 

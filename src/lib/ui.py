@@ -14,7 +14,7 @@ DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-APPLICATION_VERSION = "0.54.4"
+APPLICATION_VERSION = "0.54.5"
 
 def gthreaded(f):
     
