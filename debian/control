@@ -1,5 +1,5 @@
-Source: autokey
-Section: kde
+Source: autokey-gtk
+Section: gnome
 Priority: optional
 Maintainer: Chris Dekter <cdekter@gmail.com>
 Build-Depends: python (>= 2.6), cdbs (>= 0.4.49), debhelper (>= 6)
@@ -8,10 +8,11 @@ Standards-Version: 3.8.3
 XS-Python-Version: >= 2.6
 Homepage: http://autokey.googlecode.com/
 
-Package: autokey
+Package: autokey-gtk
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-kde4, python-qt4, python-qscintilla2, python-xlib
+Depends: ${python:Depends}, ${misc:Depends}, python-gtk2, python-gtksourceview2, python-glade2, python-xlib, python-notify
 XB-Python-Version: ${python:Versions}
+Conflicts: autokey
 Description: desktop automation utility
  AutoKey is a desktop automation utility for Linux and X11. It allows the 
  automation of virtually any task by responding to typed abbreviations and 

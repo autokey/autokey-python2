@@ -18,13 +18,11 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-import sys, traceback, os.path, signal, logging, logging.handlers, subprocess, Queue
-from PyKDE4.kdecore import KCmdLineArgs, KCmdLineOptions, KAboutData, ki18n, i18n
-from PyKDE4.kdeui import KMessageBox, KApplication
-from PyQt4.QtCore import SIGNAL, Qt, QObject, QEvent
-from PyQt4.QtGui import QCursor
+import sys, traceback, os.path, signal, logging, logging.handlers, subprocess, Queue, optparse
+import gettext, gtk
+gettext.install("autokey")
 
-import service, ui.notifier, ui.popupmenu
+import service, ui.notifier, ui.popupmenu, ui.configwindow, ui.abbrselector
 from configmanager import *
 
 CONFIG_DIR = os.path.expanduser("~/.config/autokey")
@@ -36,12 +34,12 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 
 APP_NAME = "AutoKey"
 CATALOG = ""
-PROGRAM_NAME = ki18n("AutoKey")
-VERSION = "0.60.5"
-DESCRIPTION = ki18n("Desktop automation utility")
-LICENSE = KAboutData.License_GPL_V3
-COPYRIGHT = ki18n("(c) 2009 Chris Dekter")
-TEXT = ki18n("")
+PROGRAM_NAME = _("AutoKey")
+VERSION = "0.60.4"
+DESCRIPTION = _("Desktop automation utility")
+#LICENSE = KAboutData.License_GPL_V3
+COPYRIGHT = _("(c) 2009 Chris Dekter")
+#TEXT = _("")
 HOMEPAGE  = "http://autokey.sourceforge.net/"
 BUG_EMAIL = "cdekter@gmail.com"
 
@@ -55,22 +53,26 @@ class Application:
     
     def __init__(self):
         
-        aboutData = KAboutData(APP_NAME, CATALOG, PROGRAM_NAME, VERSION, DESCRIPTION,
+        """aboutData = KAboutData(APP_NAME, CATALOG, PROGRAM_NAME, VERSION, DESCRIPTION,
                                     LICENSE, COPYRIGHT, TEXT, HOMEPAGE, BUG_EMAIL)
 
-        aboutData.addAuthor(ki18n("Chris Dekter"), ki18n("Developer"), "cdekter@gmail.com", "")
-        aboutData.addAuthor(ki18n("Sam Peterson"), ki18n("Original developer"), "peabodyenator@gmail.com", "")
+        aboutData.addAuthor(_("Chris Dekter"), _("Developer"), "cdekter@gmail.com", "")
+        aboutData.addAuthor(_("Sam Peterson"), _("Original developer"), "peabodyenator@gmail.com", "")
         aboutData.setProgramIconName(ui.notifier.ICON_FILE)
         
         KCmdLineArgs.init(sys.argv, aboutData)
         options = KCmdLineOptions()
-        options.add("l").add("verbose", ki18n("Enable verbose logging"))
-        options.add("c").add("configure", ki18n("Show the configuration window on startup"))
+        options.add("l").add("verbose", _("Enable verbose logging"))
+        options.add("c").add("configure", _("Show the configuration window on startup"))
         KCmdLineArgs.addCmdLineOptions(options)
-        args = KCmdLineArgs.parsedArgs()
+        args = KCmdLineArgs.parsedArgs()"""
         
+        gtk.gdk.threads_init()
         
-        self.app = KApplication()
+        p = optparse.OptionParser()
+        p.add_option("-l", "--verbose", help="Enable verbose logging", action="store_true", default=False)
+        p.add_option("-c", "--configure", help="Show the configuration window on startup", action="store_true", default=False)
+        options, args = p.parse_args()
         
         try:
             # Create configuration directory
@@ -79,10 +81,10 @@ class Application:
             # Initialise logger
             rootLogger = logging.getLogger()
             
-            if args.isSet("verbose"):
+            if options.verbose:
                 rootLogger.setLevel(logging.DEBUG)
                 handler = logging.StreamHandler(sys.stdout)
-            else:           
+            else:
                 rootLogger.setLevel(logging.INFO)
                 handler = logging.handlers.RotatingFileHandler(LOG_FILE, 
                                         maxBytes=MAX_LOG_SIZE, backupCount=MAX_LOG_COUNT)
@@ -94,10 +96,10 @@ class Application:
             if self.__verifyNotRunning():
                 self.__createLockFile()
                 
-            self.initialise(args.isSet("configure"))
+            self.initialise(options.configure)
             
         except Exception, e:
-            self.show_error_dialog(i18n("Fatal error starting AutoKey.\n") + str(e))
+            self.show_error_dialog(_("Fatal error starting AutoKey.\n") + str(e))
             logging.exception("Fatal error starting AutoKey: " + str(e))
             sys.exit(1)
             
@@ -121,13 +123,13 @@ class Application:
                 # process exists
                 if "autokey" in output[1]:
                     logging.error("AutoKey is already running - exiting")
-                    self.show_error_dialog(i18n("AutoKey is already running as pid: ") + pid)
+                    self.show_error_dialog(_("AutoKey is already running as pid: ") + pid)
                     sys.exit(1)
          
         return True
 
     def main(self):
-        self.app.exec_()
+        gtk.main()
 
     def initialise(self, configure):
         logging.info("Initialising application")
@@ -140,17 +142,16 @@ class Application:
         except Exception, e:
             logging.exception("Error starting interface: " + str(e))
             self.serviceDisabled = True
-            self.show_error_dialog(i18n("Error starting interface. Keyboard monitoring will be disabled.\n" +
+            self.show_error_dialog(_("Error starting interface. Keyboard monitoring will be disabled.\n" +
                                     "Check your system/configuration."), str(e))
         
         self.notifier = ui.notifier.Notifier(self)
         self.configWindow = None
+        self.abbrPopup = None
         
         if ConfigManager.SETTINGS[IS_FIRST_RUN] or configure:
             ConfigManager.SETTINGS[IS_FIRST_RUN] = False
             self.show_configure()
-            
-        self.handler = CallbackEventHandler()
             
     def init_global_hotkeys(self, configManager):
         logging.info("Initialise global hotkeys")
@@ -159,7 +160,7 @@ class Application:
         
     def config_altered(self):
         self.configManager.config_altered()
-        self.notifier.build_menu()
+        #self.notifier.build_menu()
         
     def unpause_service(self):
         """
@@ -188,10 +189,13 @@ class Application:
         """
         Shut down the entire application.
         """
+        if self.configWindow is not None:
+            if self.configWindow.promptToSave():
+               return
+             
         logging.info("Shutting down")
-        self.app.closeAllWindows()
         self.service.shutdown()
-        self.app.quit()
+        gtk.main_quit()
         os.remove(LOCK_FILE)
             
     def show_notify(self, message, isError=False, details=''):
@@ -210,57 +214,44 @@ class Application:
         Show the configuration window, or deiconify (un-minimise) it if it's already open.
         """
         logging.info("Displaying configuration window")
-        try:
-            self.configWindow.showNormal()
-            self.configWindow.activateWindow()            
-        except:
+        if self.configWindow is None:
             self.configWindow = ui.configwindow.ConfigWindow(self)
             self.configWindow.show()
+        else:    
+            self.configWindow.deiconify()
             
     def show_configure_async(self):
-        self.exec_in_main(self.show_configure)
+        gtk.gdk.threads_enter()
+        self.show_configure()
+        gtk.gdk.threads_leave()
 
+    def show_abbr_selector(self):
+        """
+        Show the abbreviation autocompletion popup.
+        """
+        if self.abbrPopup is None:
+            logging.info("Displaying abbreviation popup")
+            self.abbrPopup = ui.abbrselector.AbbrSelectorDialog(self)
+            self.abbrPopup.present()
+                
+    def main(self):
+        logging.info("Entering main()")
+        gtk.main()
+            
     def show_error_dialog(self, message, details=None):
         """
         Convenience method for showing an error dialog.
         """
-        if details is None:
-            KMessageBox.error(None, message)
-        else:
-            KMessageBox.detailedError(None, message, details)
+        dlg = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK,
+                                 message_format=message)
+        if details is not None:
+            dlg.format_secondary_text(details)
+        dlg.run()
+        dlg.destroy()
         
     def show_popup_menu(self, folders=[], items=[], onDesktop=True, title=None):
-        self.exec_in_main(self.__createMenu, folders, items, onDesktop, title)
-        
-    def hide_menu(self):
-        self.exec_in_main(self.menu.hide)
-        
-    def __createMenu(self, folders, items, onDesktop, title):
         self.menu = ui.popupmenu.PopupMenu(self.service, folders, items, onDesktop, title)
-        self.menu.popup(QCursor.pos())
-        
-    def exec_in_main(self, callback, *args):
-        self.handler.postEventWithCallback(callback, *args)
-        
-        
-class CallbackEventHandler(QObject):
-
-    def __init__(self):
-        QObject.__init__(self)
-        self.queue = Queue.Queue()
-
-    def customEvent(self, event):
-        while True:
-            try:
-                callback, args = self.queue.get_nowait()
-            except Queue.Empty:
-                break
-            try:
-                callback(*args)
-            except Exception:
-                logging.warn("callback event failed: %r %r", callback, args, exc_info=True)
-
-    def postEventWithCallback(self, callback, *args):
-        self.queue.put((callback, args))
-        app = KApplication.kApplication()
-        app.postEvent(self, QEvent(QEvent.User))
+        self.menu.show_on_desktop()
+    
+    def hide_menu(self):
+        self.menu.remove_from_desktop()

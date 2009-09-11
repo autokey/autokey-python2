@@ -17,7 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import subprocess, threading
-from PyQt4.QtGui import QClipboard, QApplication
+#from PyQt4.QtGui import QClipboard, QApplication
 
 class Keyboard:
     """
@@ -84,8 +84,8 @@ class Dialog:
     Provides a simple interface for the display of some basic dialogs to collect information from the user.
     """
     
-    def __runKdialog(self, title, args):
-        p = subprocess.Popen(["kdialog", "--title", title] + args, stdout=subprocess.PIPE)
+    def __runZenity(self, title, args):
+        p = subprocess.Popen(["zenity", "--title", title] + args, stdout=subprocess.PIPE)
         retCode = p.wait()
         output = p.stdout.read()[:-1] # Drop trailing newline
         
@@ -101,7 +101,7 @@ class Dialog:
         @param message: message displayed above the input box
         @param default: default value for the input box
         """
-        return self.__runKdialog(title, ["--inputbox", message, default])
+        return self.__runZenity(title, ["--entry", "--text", message, "--entry-text", default])
         
     def password_dialog(self, title="Enter password", message="Enter password"):
         """
@@ -112,7 +112,7 @@ class Dialog:
         @param title: window title for the dialog
         @param message: message displayed above the password input box
         """
-        return self.__runKdialog(title, ["--password", message])        
+        return self.__runZenity(title, ["--entry", "--text", message, "--hide-text"])
         
     def combo_menu(self, options, title="Choose an option", message="Choose an option"):
         """
@@ -124,7 +124,7 @@ class Dialog:
         @param title: window title for the dialog
         @param message: message displayed above the combobox      
         """
-        return self.__runKdialog(title, ["--combobox", message] + options)
+        return self.__runZenity(title, ["--combobox", message] + options)
         
     def list_menu(self, options, title="Choose a value", message="Choose a value", default=None):
         """
@@ -149,7 +149,7 @@ class Dialog:
                 choices.append("off")
             optionNum += 1
             
-        retCode, result = self.__runKdialog(title, ["--radiolist", message] + choices)
+        retCode, result = self.__runZenity(title, ["--radiolist", message] + choices)
         choice = options[int(result)]
         
         return retCode, choice        
@@ -177,7 +177,7 @@ class Dialog:
                 choices.append("off")
             optionNum += 1
             
-        retCode, output = self.__runKdialog(title, ["--separate-output", "--checklist", message] + choices)
+        retCode, output = self.__runZenity(title, ["--separate-output", "--checklist", message] + choices)
         results = output.split()
     
         choices = []
@@ -198,9 +198,9 @@ class Dialog:
         @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
         if rememberAs is not None:
-            return self.__runKdialog(title, ["--getopenfilename", initialDir, fileTypes, ":" + rememberAs])
+            return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes, ":" + rememberAs])
         else:
-            return self.__runKdialog(title, ["--getopenfilename", initialDir, fileTypes])
+            return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes])
         
     def save_file(self, title="Save As", initialDir="~", fileTypes="*|All Files", rememberAs=None):
         """
@@ -214,9 +214,9 @@ class Dialog:
         @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
         if rememberAs is not None:
-            return self.__runKdialog(title, ["--getsavefilename", initialDir, fileTypes, ":" + rememberAs])
+            return self.__runZenity(title, ["--getsavefilename", initialDir, fileTypes, ":" + rememberAs])
         else:
-            return self.__runKdialog(title, ["--getsavefilename", initialDir, fileTypes])
+            return self.__runZenity(title, ["--getsavefilename", initialDir, fileTypes])
 
     def choose_directory(self, title="Select Directory", initialDir="~", rememberAs=None):
         """
@@ -229,9 +229,9 @@ class Dialog:
         @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
         if rememberAs is not None:
-            return self.__runKdialog(title, ["--getexistingdirectory", initialDir, ":" + rememberAs])
+            return self.__runZenity(title, ["--getexistingdirectory", initialDir, ":" + rememberAs])
         else:
-            return self.__runKdialog(title, ["--getexistingdirectory", initialDir])
+            return self.__runZenity(title, ["--getexistingdirectory", initialDir])
         
     def choose_colour(self, title="Select Colour"):
         """
@@ -241,7 +241,7 @@ class Dialog:
         
         @param title: window title for the dialog
         """
-        return self.__runKdialog(title, ["--getcolor"])
+        return self.__runZenity(title, ["--getcolor"])
         
         
 class System:
@@ -286,7 +286,7 @@ class Clipboard:
     """
     
     def __init__(self, app):
-        self.clipBoard = QApplication.clipboard()
+        #self.clipBoard = QApplication.clipboard()
         self.app = app
         
     def fill_selection(self, contents):

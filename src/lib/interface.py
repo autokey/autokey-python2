@@ -30,7 +30,7 @@ from Xlib import X, XK, display, error
 from Xlib.ext import record, xtest
 from Xlib.protocol import rq, event
 
-from PyQt4.QtGui import QClipboard, QApplication
+#from PyQt4.QtGui import QClipboard, QApplication
 
 logger = logging.getLogger("interface")
 
@@ -123,7 +123,7 @@ class XInterfaceBase(threading.Thread):
         self.rootWindow = self.localDisplay.screen().root
         self.lock = threading.RLock()
         self.lastChars = [] # TODO QT4 Workaround - remove me once the bug is fixed
-        self.clipBoard = QApplication.clipboard()
+        #self.clipBoard = QApplication.clipboard() # TODO replace with GTK equivalent
         
         self.__initMappings()
         
@@ -160,7 +160,7 @@ class XInterfaceBase(threading.Thread):
        
         logger.debug("Keycodes dict: %s", self.keyCodes)
         if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-            self.keymap_test()        
+            self.keymap_test()
         
     def keymap_test(self):
         #logger.debug("XK keymap:")

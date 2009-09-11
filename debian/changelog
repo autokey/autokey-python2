@@ -1,3 +1,9 @@
+autokey-gtk (0.60.5-0~jaunty) jaunty; urgency=low
+
+  * Implement GTK version of new UI using Glade extensively
+
+ -- Chris Dekter <cdekter@gmail.com>  Fri, 11 Sep 2009 12:38:05 +1000
+
 autokey (0.60.5-0~jaunty) jaunty; urgency=low
 
   * Change to using pickle instead of cPickle due to a bug in the latter
