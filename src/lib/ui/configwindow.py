@@ -427,6 +427,7 @@ class PhrasePage(ScriptPage):
         self.__sm = gtksourceview2.StyleSchemeManager()
         self.buffer.set_language(None)
         self.buffer.set_style_scheme(self.__sm.get_scheme("kate"))
+        self.buffer.set_highlight_matching_brackets(False)
         self.editor.set_auto_indent(False)
         self.editor.set_smart_home_end(False)
         self.editor.set_insert_spaces_instead_of_tabs(True)
