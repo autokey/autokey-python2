@@ -387,9 +387,11 @@ class ScriptPage:
     def undo(self):
         self.buffer.undo()
         self.parentWindow.set_undo_available(self.buffer.can_undo())
-        
+        self.parentWindow.set_redo_available(self.buffer.can_redo())
+                
     def redo(self):
         self.buffer.redo()
+        self.parentWindow.set_undo_available(self.buffer.can_undo())
         self.parentWindow.set_redo_available(self.buffer.can_redo())
         
     def on_modified(self, widget, data=None):
