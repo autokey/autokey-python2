@@ -18,8 +18,8 @@
 
 import gtk
 
-from autokey.configmanager import *
-from autokey import iomediator, interface, model
+from autokeygtk.configmanager import *
+from autokeygtk import iomediator, interface, model
 from dialogs import GlobalHotkeyDialog
 import configwindow
 

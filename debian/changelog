@@ -2,7 +2,7 @@ autokey-gtk (0.60.5-0~jaunty) jaunty; urgency=low
 
   * Implement GTK version of new UI using Glade extensively
 
- -- Chris Dekter <cdekter@gmail.com>  Fri, 11 Sep 2009 12:38:05 +1000
+ -- Chris Dekter <cdekter@gmail.com>  Wed, 30 Sep 2009 12:38:05 +1000
 
 autokey (0.60.5-0~jaunty) jaunty; urgency=low
 

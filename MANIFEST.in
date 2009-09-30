@@ -1,5 +1,4 @@
 include config/akicon.png
-include config/autokey.desktop
-include src/lib/ui/data/gui.xml
-include src/lib/ui/data/api.txt
+include config/autokey-gtk.desktop
+include src/lib/ui/data/*
 include INSTALL

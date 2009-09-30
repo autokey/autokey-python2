@@ -12,8 +12,8 @@
 ### END INIT INFO
 
 import sys, os, socket, glob, shutil
-from autokey import evdev, daemon
-from autokey.interface import DOMAIN_SOCKET_PATH, PACKET_SIZE
+from autokeygtk import evdev, daemon
+from autokeygtk.interface import DOMAIN_SOCKET_PATH, PACKET_SIZE
 
 PACKET_STRING = "%s,%s,%s"
 

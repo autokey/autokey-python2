@@ -18,7 +18,7 @@
 
 import gtk
 
-from autokey.configmanager import *
+from autokeygtk.configmanager import *
 import configwindow
 
 

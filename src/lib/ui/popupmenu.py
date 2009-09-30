@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import gtk, time, logging
-from autokey.configmanager import *
+from autokeygtk.configmanager import *
 
-from autokey.model import Folder # TODO remove later
+from autokeygtk.model import Folder # TODO remove later
 
 _logger = logging.getLogger("phrase-menu")
 

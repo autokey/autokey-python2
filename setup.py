@@ -32,11 +32,11 @@ offers a full-featured GUI that makes it highly accessible for novices, as well 
 interface offering the full flexibility and power of the Python language.""",
       #py_modules=["autokey", "configurationmanager", "expansionservice", "interface",
       #            "iomediator", "phrase", "phrasemenu", "ui"],
-      package_dir={"autokey": "src/lib"},
-      packages=["autokey", "autokey.plugin", "autokey.ui"],
-      package_data={"autokey.ui" : ["data/*"]},
+      package_dir={"autokeygtk": "src/lib"},
+      packages=["autokeygtk", "autokeygtk.plugin", "autokeygtk.ui"],
+      package_data={"autokeygtk.ui" : ["data/*"]},
       data_files=[("/usr/share/pixmaps", ["config/akicon.png"]),
-                  ("/usr/share/applications", ["config/autokey.desktop"])],
-      scripts=['autokey']
+                  ("/usr/share/applications", ["config/autokey-gtk.desktop"])],
+      scripts=['autokey-gtk']
       #packages=["plugin"]
       )

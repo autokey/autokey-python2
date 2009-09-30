@@ -21,10 +21,10 @@ import gtk, gtk.glade, gtksourceview2
 
 from dialogs import *
 from settingsdialog import SettingsDialog
-from autokey.configmanager import *
-from autokey.iomediator import KeyRecorder
-from autokey import model
-import autokey.autokey
+from autokeygtk.configmanager import *
+from autokeygtk.iomediator import KeyRecorder
+from autokeygtk import model
+import autokeygtk.autokey
 
 CONFIG_WINDOW_TITLE = _("Configuration")
 ICON_FILE = "/usr/share/pixmaps/akicon.png"
@@ -567,6 +567,7 @@ class ConfigWindow:
             self.hide()
             self.destroy()
             self.app.configWindow = None
+            self.app.config_altered()
             
     def on_quit(self, widget, data=None):
         #if not self.queryClose():
@@ -706,7 +707,7 @@ class ConfigWindow:
         dlg = gtk.AboutDialog()
         dlg.set_name("AutoKey")
         dlg.set_comments("A desktop automation utility for Linux and X11.")
-        dlg.set_version(autokey.autokey.VERSION)
+        dlg.set_version(autokeygtk.autokey.VERSION)
         p = gtk.gdk.pixbuf_new_from_file(ICON_FILE)
         dlg.set_logo(p)
         dlg.run()
