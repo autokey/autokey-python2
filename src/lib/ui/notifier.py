@@ -18,7 +18,7 @@
 
 import pynotify, gobject, gtk
 import popupmenu, abbrselector
-from autokeygtk.configmanager import *
+from autokey.configmanager import *
 
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"

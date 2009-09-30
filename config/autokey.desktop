@@ -1,9 +1,9 @@
 # $Id: autokey-gtk.desktop 132 2009-09-29 11:29:13Z cdekter $
 [Desktop Entry]
-Name=AutoKey (GTK UI)
+Name=AutoKey
 GenericName=Keyboard Automation
 Comment=Program keyboard shortcuts
-Exec=autokey-gtk
+Exec=autokey
 Terminal=false
 Type=Application
 Icon=/usr/share/pixmaps/akicon.png

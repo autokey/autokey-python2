@@ -18,8 +18,8 @@
 
 import gtk
 
-from autokeygtk.configmanager import *
-from autokeygtk import iomediator, interface, model
+from autokey.configmanager import *
+from autokey import iomediator, interface, model
 from dialogs import GlobalHotkeyDialog
 import configwindow
 
@@ -51,15 +51,20 @@ class SettingsDialog:
         # Hotkeys
         self.showConfigDlg = GlobalHotkeyDialog(parent, configManager, self.on_config_response)
         self.toggleMonitorDlg = GlobalHotkeyDialog(parent, configManager, self.on_monitor_response)
+        self.showPopupDlg = GlobalHotkeyDialog(parent, configManager, self.on_popup_response)
         self.configKeyLabel = builder.get_object("configKeyLabel")
         self.clearConfigButton = builder.get_object("clearConfigButton")
         self.monitorKeyLabel = builder.get_object("monitorKeyLabel")
         self.clearMonitorButton = builder.get_object("clearMonitorButton")
+        self.popupKeyLabel = builder.get_object("popupKeyLabel")
+        self.clearPopupButton = builder.get_object("clearPopupButton")        
         
         self.useConfigHotkey = self.__loadHotkey(configManager.configHotkey, self.configKeyLabel, 
                                                     self.showConfigDlg, self.clearConfigButton)
         self.useServiceHotkey = self.__loadHotkey(configManager.toggleServiceHotkey, self.monitorKeyLabel, 
-                                                    self.toggleMonitorDlg, self.clearMonitorButton)
+                                                    self.toggleMonitorDlg, self.clearMonitorButton)                                                    
+        self.usePopupHotkey = self.__loadHotkey(configManager.showPopupHotkey, self.popupKeyLabel, 
+                                                    self.showPopupDlg, self.clearPopupButton)
         
         # Interface Settings
         self.xRecordButton = builder.get_object("xRecordButton")
@@ -96,6 +101,9 @@ class SettingsDialog:
         
         self.toggleMonitorDlg.save(self.configManager.toggleServiceHotkey)
         self.configManager.toggleServiceHotkey.enabled = self.useServiceHotkey
+        
+        self.showPopupDlg.save(self.configManager.showPopupHotkey)
+        self.configManager.showPopupHotkey.enabled = self.usePopupHotkey
         
         self.configManager.config_altered()
         
@@ -173,4 +181,19 @@ class SettingsDialog:
         self.monitorKeyLabel.set_text(_("(None configured)"))
         self.toggleMonitorDlg.reset()
 
-    # TODO set_abbr_popup button stuff
+    def on_setPopupButton_pressed(self, widget, data=None):
+        self.showPopupDlg.run()
+        
+    def on_popup_response(self, res):
+        if res == gtk.RESPONSE_OK:
+            self.usePopupHotkey = True
+            key = self.showPopupDlg.key
+            modifiers = self.showPopupDlg.build_modifiers()
+            self.popupKeyLabel.set_text(self.build_hotkey_string(key, modifiers))
+            self.clearPopupButton.set_sensitive(True)
+            
+    def on_clearPopupButton_pressed(self, widget, data=None):
+        self.usePopupHotkey = False
+        self.clearPopupButton.set_sensitive(False)
+        self.popupKeyLabel.set_text(_("(None configured)"))
+        self.showPopupDlg.reset()

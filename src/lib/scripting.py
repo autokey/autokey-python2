@@ -17,7 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import subprocess, threading
-#from PyQt4.QtGui import QClipboard, QApplication
+import gtk
 
 class Keyboard:
     """
@@ -114,9 +114,9 @@ class Dialog:
         """
         return self.__runZenity(title, ["--entry", "--text", message, "--hide-text"])
         
-    def combo_menu(self, options, title="Choose an option", message="Choose an option"):
+    #def combo_menu(self, options, title="Choose an option", message="Choose an option"):
         """
-        Show a combobox menu
+        Show a combobox menu - not supported by zenity
         
         Usage: C{dialog.combo_menu(options, title="Choose an option", message="Choose an option")}
         
@@ -124,7 +124,7 @@ class Dialog:
         @param title: window title for the dialog
         @param message: message displayed above the combobox      
         """
-        return self.__runZenity(title, ["--combobox", message] + options)
+        #return self.__runZenity(title, ["--combobox", message] + options)
         
     def list_menu(self, options, title="Choose a value", message="Choose a value", default=None):
         """
@@ -139,20 +139,20 @@ class Dialog:
         """
         
         choices = []
-        optionNum = 0
+        #optionNum = 0
         for option in options:
-            choices.append(str(optionNum))
-            choices.append(option)
             if option == default:
-                choices.append("on")
+                choices.append("TRUE")
             else:
-                choices.append("off")
-            optionNum += 1
+                choices.append("FALSE")
+                
+            #choices.append(str(optionNum))
+            choices.append(option)
+            #optionNum += 1
             
-        retCode, result = self.__runZenity(title, ["--radiolist", message] + choices)
-        choice = options[int(result)]
+        return self.__runZenity(title, ["--list", "--radiolist", "--text", message, "--column", " ", "--column", "Options"] + choices)
         
-        return retCode, choice        
+        #return retCode, choice    
         
     def list_menu_multi(self, options, title="Choose one or more values", message="Choose one or more values", defaults=[]):
         """
@@ -167,81 +167,75 @@ class Dialog:
         """
         
         choices = []
-        optionNum = 0
+        #optionNum = 0
         for option in options:
-            choices.append(str(optionNum))
-            choices.append(option)
             if option in defaults:
-                choices.append("on")
+                choices.append("TRUE")
             else:
-                choices.append("off")
-            optionNum += 1
+                choices.append("FALSE")
+                
+            #choices.append(str(optionNum))
+            choices.append(option)
+            #optionNum += 1
             
-        retCode, output = self.__runZenity(title, ["--separate-output", "--checklist", message] + choices)
+        retCode, output = self.__runZenity(title, ["--list", "--checklist", "--text", message, "--column", " ", "--column", "Options"] + choices)
         results = output.split()
     
         choices = []
-        for index in results:
-            choices.append(options[int(index)])
+        for choice in results:
+            choices.append(choice)
         
         return retCode, choices
         
-    def open_file(self, title="Open File", initialDir="~", fileTypes="*|All Files", rememberAs=None):
+    def open_file(self, title="Open File"):
         """
         Show an Open File dialog
         
-        Usage: C{dialog.open_file(title="Open File", initialDir="~", fileTypes="*|All Files", rememberAs=None)}
+        Usage: C{dialog.open_file(title="Open File")}
         
         @param title: window title for the dialog
         @param initialDir: starting directory for the file dialog
-        @param fileTypes: file type filter expression
-        @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
-        if rememberAs is not None:
-            return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes, ":" + rememberAs])
-        else:
-            return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes])
+        #if rememberAs is not None:
+        #    return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes, ":" + rememberAs])
+        #else:
+        return self.__runZenity(title, ["--file-selection"])
         
-    def save_file(self, title="Save As", initialDir="~", fileTypes="*|All Files", rememberAs=None):
+    def save_file(self, title="Save As"):
         """
         Show a Save As dialog
         
-        Usage: C{dialog.save_file(title="Save As", initialDir="~", fileTypes="*|All Files", rememberAs=None)}
+        Usage: C{dialog.save_file(title="Save As")}
         
         @param title: window title for the dialog
-        @param initialDir: starting directory for the file dialog
-        @param fileTypes: file type filter expression
-        @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
-        if rememberAs is not None:
-            return self.__runZenity(title, ["--getsavefilename", initialDir, fileTypes, ":" + rememberAs])
-        else:
-            return self.__runZenity(title, ["--getsavefilename", initialDir, fileTypes])
-
-    def choose_directory(self, title="Select Directory", initialDir="~", rememberAs=None):
+        #if rememberAs is not None:
+        #    return self.__runZenity(title, ["--getsavefilename", initialDir, fileTypes, ":" + rememberAs])
+        #else:
+        return self.__runZenity(title, ["--file-selection", "--save"])
+        
+    def choose_directory(self, title="Select Directory", initialDir="~"):
         """
         Show a Directory Chooser dialog
         
-        Usage: C{dialog.choose_directory(title="Select Directory", initialDir="~", rememberAs=None)}
+        Usage: C{dialog.choose_directory(title="Select Directory")}
         
         @param title: window title for the dialog
-        @param initialDir: starting directory for the directory chooser dialog
-        @param rememberAs: gives an ID to this file dialog, allowing it to open at the last used path next time
         """
-        if rememberAs is not None:
-            return self.__runZenity(title, ["--getexistingdirectory", initialDir, ":" + rememberAs])
-        else:
-            return self.__runZenity(title, ["--getexistingdirectory", initialDir])
+        #if rememberAs is not None:
+        #    return self.__runZenity(title, ["--getexistingdirectory", initialDir, ":" + rememberAs])
+        #else:
+        return self.__runZenity(title, ["--file-selection", "--directory"])
         
-    def choose_colour(self, title="Select Colour"):
+    #def choose_colour(self, title="Select Colour"):
         """
-        Show a Colour Chooser dialog
+        Show a Colour Chooser dialog - not supported by zenity
         
         Usage: C{dialog.choose_colour(title="Select Colour")}
         
         @param title: window title for the dialog
         """
-        return self.__runZenity(title, ["--getcolor"])
+        #return self.__runZenity(title, ["--getcolor"])
         
         
 class System:
@@ -286,7 +280,8 @@ class Clipboard:
     """
     
     def __init__(self, app):
-        #self.clipBoard = QApplication.clipboard()
+        self.clipBoard = gtk.Clipboard()
+        self.selection = gtk.Clipboard(selection="PRIMARY")
         self.app = app
         
     def fill_selection(self, contents):
@@ -297,11 +292,12 @@ class Clipboard:
         
         @param contents: string to be placed in the selection
         """
-        self.__execAsync(self.__fillSelection, contents)
+        #self.__execAsync(self.__fillSelection, contents)
+        self.__fillSelection(contents)
         
     def __fillSelection(self, string):
-        self.clipBoard.setText(string, QClipboard.Selection)
-        self.sem.release()
+        self.selection.set_text(string.encode("utf-8"))
+        #self.sem.release()
         
     def get_selection(self):
         """
@@ -309,11 +305,11 @@ class Clipboard:
         
         Usage: C{clipboard.get_selection()}
         """
-        self.__execAsync(self.__getSelection)
-        return str(self.text)
+        self.__execAsync(self.selection.request_text, self.__receive)
+        return self.text.decode("utf-8")
         
-    def __getSelection(self):
-        self.text = self.clipBoard.text(QClipboard.Selection)
+    def __receive(self, cb, text, data=None):
+        self.text = text
         self.sem.release()
         
     def fill_clipboard(self, contents):
@@ -324,11 +320,11 @@ class Clipboard:
         
         @param contents: string to be placed in the selection
         """
-        self.__execAsync(self.__fillClipboard, contents)
+        self.__fillClipboard(contents)
         
     def __fillClipboard(self, string):
-        self.clipBoard.setText(string, QClipboard.Clipboard)
-        self.sem.release()        
+        self.clipBoard.set_text(string.encode("utf-8"))
+        #self.sem.release()        
         
     def get_clipboard(self):
         """
@@ -336,15 +332,11 @@ class Clipboard:
         
         Usage: C{clipboard.get_clipboard()}
         """
-        self.__execAsync(self.__getClipboard)
-        return str(self.text)
-        
-    def __getClipboard(self):
-        self.text = self.clipBoard.text(QClipboard.Clipboard)
-        self.sem.release()
+        self.__execAsync(self.clipBoard.request_text, self.__receive)
+        return self.text.decode("utf-8")
         
     def __execAsync(self, callback, *args):
         self.sem = threading.Semaphore(0)
-        self.app.exec_in_main(callback, *args)
+        callback(*args)
         self.sem.acquire()        
         

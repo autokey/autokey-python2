@@ -35,7 +35,7 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 APP_NAME = "AutoKey"
 CATALOG = ""
 PROGRAM_NAME = _("AutoKey")
-VERSION = "0.60.5"
+VERSION = "0.60.6"
 DESCRIPTION = _("Desktop automation utility")
 #LICENSE = KAboutData.License_GPL_V3
 COPYRIGHT = _("(c) 2009 Chris Dekter")
@@ -157,6 +157,7 @@ class Application:
         logging.info("Initialise global hotkeys")
         configManager.toggleServiceHotkey.set_closure(self.toggle_service)
         configManager.configHotkey.set_closure(self.show_configure_async)
+        configManager.showPopupHotkey.set_closure(self.show_abbr_async)        
         
     def config_altered(self):
         self.configManager.config_altered()
@@ -233,6 +234,11 @@ class Application:
             logging.info("Displaying abbreviation popup")
             self.abbrPopup = ui.abbrselector.AbbrSelectorDialog(self)
             self.abbrPopup.present()
+            
+    def show_abbr_async(self):
+        gtk.gdk.threads_enter()
+        self.show_abbr_selector()
+        gtk.gdk.threads_leave()
                 
     def main(self):
         logging.info("Entering main()")

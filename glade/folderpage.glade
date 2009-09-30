@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Mon Aug 31 22:19:09 2009 -->
+<!--Generated with glade3 3.4.5 on Wed Sep 30 16:00:10 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="window1">
     <child>
@@ -18,7 +18,9 @@
               <widget class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Title</property>
+                <property name="xpad">5</property>
+                <property name="label" translatable="yes">&lt;b&gt;Folder&lt;/b&gt;</property>
+                <property name="use_markup">True</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -59,6 +61,15 @@
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="on_modified"/>
                           </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkHSeparator" id="hseparator1">
+                            <property name="visible">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                       </widget>
                     </child>

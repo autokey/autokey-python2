@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from autokeygtk.autokey import Application
+from autokey.autokey import Application
 
 a = Application()
 try:

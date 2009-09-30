@@ -1,4 +1,4 @@
-autokey-gtk (0.60.5-0~jaunty) jaunty; urgency=low
+autokey-gtk (0.60.6-0~jaunty) jaunty; urgency=low
 
   * Implement GTK version of new UI using Glade extensively
 

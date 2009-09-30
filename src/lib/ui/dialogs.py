@@ -4,7 +4,7 @@ import gtk, gtk.glade
 
 __all__ = ["validate", "EMPTY_FIELD_REGEX", "AbbrSettingsDialog", "HotkeySettingsDialog", "WindowFilterSettingsDialog"]
 
-from autokeygtk import model, iomediator
+from autokey import model, iomediator
 import configwindow
 
 WORD_CHAR_OPTIONS = {

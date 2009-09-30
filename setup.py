@@ -20,7 +20,7 @@ from distutils.core import setup
 
 setup(
       name="autokey-gtk",
-      version="0.60.5", 
+      version="0.60.6", 
       author="Chris Dekter",
       author_email="cdekter@gmail.com",
       url="http://autokey.googlecode.com/",
@@ -32,11 +32,11 @@ offers a full-featured GUI that makes it highly accessible for novices, as well 
 interface offering the full flexibility and power of the Python language.""",
       #py_modules=["autokey", "configurationmanager", "expansionservice", "interface",
       #            "iomediator", "phrase", "phrasemenu", "ui"],
-      package_dir={"autokeygtk": "src/lib"},
-      packages=["autokeygtk", "autokeygtk.plugin", "autokeygtk.ui"],
-      package_data={"autokeygtk.ui" : ["data/*"]},
+      package_dir={"autokey": "src/lib"},
+      packages=["autokey", "autokey.plugin", "autokey.ui"],
+      package_data={"autokey.ui" : ["data/*"]},
       data_files=[("/usr/share/pixmaps", ["config/akicon.png"]),
-                  ("/usr/share/applications", ["config/autokey-gtk.desktop"])],
-      scripts=['autokey-gtk']
+                  ("/usr/share/applications", ["config/autokey.desktop"])],
+      scripts=['autokey']
       #packages=["plugin"]
       )

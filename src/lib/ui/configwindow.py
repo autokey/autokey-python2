@@ -21,10 +21,10 @@ import gtk, gtk.glade, gtksourceview2
 
 from dialogs import *
 from settingsdialog import SettingsDialog
-from autokeygtk.configmanager import *
-from autokeygtk.iomediator import KeyRecorder
-from autokeygtk import model
-import autokeygtk.autokey
+from autokey.configmanager import *
+from autokey.iomediator import KeyRecorder
+from autokey import model
+import autokey.autokey
 
 CONFIG_WINDOW_TITLE = _("Configuration")
 ICON_FILE = "/usr/share/pixmaps/akicon.png"
@@ -32,6 +32,7 @@ ICON_FILE = "/usr/share/pixmaps/akicon.png"
 FAQ_URL = "http://code.google.com/p/autokey/wiki/FAQ"
 HELP_URL = "http://code.google.com/p/autokey/w/list"
 DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
+WEBSITE = "http://code.google.com/p/autokey"
 
 UI_DESCRIPTION_FILE = os.path.join(os.path.dirname(__file__), "data/menus.xml")
 
@@ -233,7 +234,7 @@ class FolderPage:
         self.parentWindow.set_dirty(True)
         
         
-class PhrasePage:
+class OldPhrasePage:
     
     def __init__(self, parentWindow):
         self.parentWindow = parentWindow
@@ -307,9 +308,9 @@ class ScriptPage:
         self.descriptionEntry = builder.get_object("descriptionEntry")
         self.buffer = gtksourceview2.Buffer()
         self.buffer.connect("changed", self.on_modified)
-        self.scriptEditor = gtksourceview2.View(self.buffer)
+        self.editor = gtksourceview2.View(self.buffer)
         scrolledWindow = builder.get_object("scrolledWindow")
-        scrolledWindow.add(self.scriptEditor)
+        scrolledWindow.add(self.editor)
         self.promptCheckbox = builder.get_object("promptCheckbox")
         self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
 
@@ -322,15 +323,15 @@ class ScriptPage:
         self.__sm = gtksourceview2.StyleSchemeManager()
         self.buffer.set_language(self.__m.get_language("python"))
         self.buffer.set_style_scheme(self.__sm.get_scheme("kate"))
-        self.scriptEditor.set_auto_indent(True)
-        self.scriptEditor.set_smart_home_end(True)
-        self.scriptEditor.set_insert_spaces_instead_of_tabs(True)
-        self.scriptEditor.set_tab_width(4)
+        self.editor.set_auto_indent(True)
+        self.editor.set_smart_home_end(True)
+        self.editor.set_insert_spaces_instead_of_tabs(True)
+        self.editor.set_tab_width(4)
         
         self.ui.show_all()
 
     def load(self, theScript):
-        self.currentScript = theScript
+        self.currentItem = theScript
         self.descriptionEntry.set_text(theScript.description.encode("utf-8"))
         
         self.buffer.begin_not_undoable_action()
@@ -343,19 +344,19 @@ class ScriptPage:
         self.settingsWidget.load(theScript)
     
     def save(self):
-        self.currentScript.description = self.descriptionEntry.get_text().decode("utf-8")
+        self.currentItem.description = self.descriptionEntry.get_text().decode("utf-8")
     
         #buffer = self.phraseText.get_buffer()
-        self.currentScript.code = self.buffer.get_text(self.buffer.get_start_iter(),
+        self.currentItem.code = self.buffer.get_text(self.buffer.get_start_iter(),
                                                         self.buffer.get_end_iter()).decode("utf-8")
     
-        self.currentScript.prompt = self.promptCheckbox.get_active()
-        self.currentScript.showInTrayMenu = self.showInTrayCheckbox.get_active()
+        self.currentItem.prompt = self.promptCheckbox.get_active()
+        self.currentItem.showInTrayMenu = self.showInTrayCheckbox.get_active()
         
         self.settingsWidget.save()
     
     def reset(self):
-        self.load(self.currentScript)
+        self.load(self.currentItem)
         self.parentWindow.set_undo_available(False)
         self.parentWindow.set_redo_available(False)
         
@@ -366,7 +367,7 @@ class ScriptPage:
         
         #buffer = self.phraseText.get_buffer()
         text = self.buffer.get_text(self.buffer.get_start_iter(), self.buffer.get_end_iter())
-        if not validate(not EMPTY_FIELD_REGEX.match(text), _("The script code can't be empty"), self.scriptEditor,
+        if not validate(not EMPTY_FIELD_REGEX.match(text), _("The script code can't be empty"), self.editor,
                          self.parentWindow.ui):
             return False
         
@@ -400,6 +401,64 @@ class ScriptPage:
         self.parentWindow.set_dirty(True)
 
 
+class PhrasePage(ScriptPage):
+
+    def __init__(self, parentWindow):
+        self.parentWindow = parentWindow
+        builder = get_ui("phrasepage.xml")
+        self.ui = builder.get_object("phrasepage")
+        builder.connect_signals(self)
+        
+        self.descriptionEntry = builder.get_object("descriptionEntry")
+        self.buffer = gtksourceview2.Buffer()
+        self.buffer.connect("changed", self.on_modified)
+        self.editor = gtksourceview2.View(self.buffer)
+        scrolledWindow = builder.get_object("scrolledWindow")
+        scrolledWindow.add(self.editor)
+        self.promptCheckbox = builder.get_object("promptCheckbox")
+        self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
+
+        vbox = builder.get_object("settingsVbox")
+        self.settingsWidget = SettingsWidget(parentWindow)
+        vbox.pack_start(self.settingsWidget.ui)
+        
+        # Configure script editor
+        #self.__m = gtksourceview2.LanguageManager()
+        self.__sm = gtksourceview2.StyleSchemeManager()
+        self.buffer.set_language(None)
+        self.buffer.set_style_scheme(self.__sm.get_scheme("kate"))
+        self.editor.set_auto_indent(False)
+        self.editor.set_smart_home_end(False)
+        self.editor.set_insert_spaces_instead_of_tabs(True)
+        self.editor.set_tab_width(4)
+        
+        self.ui.show_all()
+
+    def load(self, thePhrase):
+        self.currentItem = thePhrase
+        self.descriptionEntry.set_text(thePhrase.description.encode("utf-8"))
+        
+        self.buffer.begin_not_undoable_action()
+        self.buffer.set_text(thePhrase.phrase.encode("utf-8"))
+        self.buffer.end_not_undoable_action()
+        self.buffer.place_cursor(self.buffer.get_start_iter())
+        
+        self.promptCheckbox.set_active(thePhrase.prompt)
+        self.showInTrayCheckbox.set_active(thePhrase.showInTrayMenu)
+        self.settingsWidget.load(thePhrase)
+    
+    def save(self):
+        self.currentItem.description = self.descriptionEntry.get_text().decode("utf-8")
+    
+        #buffer = self.phraseText.get_buffer()
+        self.currentItem.phrase = self.buffer.get_text(self.buffer.get_start_iter(),
+                                                        self.buffer.get_end_iter()).decode("utf-8")
+    
+        self.currentItem.prompt = self.promptCheckbox.get_active()
+        self.currentItem.showInTrayMenu = self.showInTrayCheckbox.get_active()
+        
+        self.settingsWidget.save()
+
 class ConfigWindow:
     
     def __init__(self, app):
@@ -422,7 +481,7 @@ class ConfigWindow:
                    ("new-top-folder", "folder-new", "New _Top-Level Folder", "", "Create a new top-level phrase folder", self.on_new_topfolder),
                    ("new-folder", "folder-new", "New _Folder", "", "Create a new phrase folder in the current folder", self.on_new_folder),
                    ("new-phrase", gtk.STOCK_NEW, "New _Phrase", "", "Create a new phrase in the current folder", self.on_new_phrase),
-                   ("new-script", gtk.STOCK_NEW, "New _Script", "", "Create a new script in the current folder", None),
+                   ("new-script", gtk.STOCK_NEW, "New _Script", "", "Create a new script in the current folder", self.on_new_script),
                    ("save", gtk.STOCK_SAVE, "_Save", None, "Save changes to current item", self.on_save),
                    ("close-window", gtk.STOCK_CLOSE, "_Close window", None, "Close the configuration window", self.on_close),
                    ("quit", gtk.STOCK_QUIT, "_Quit", None, "Completely exit AutoKey", self.on_quit),
@@ -601,10 +660,10 @@ class ConfigWindow:
         self.on_tree_selection_changed(self.treeView)
     
     def on_new_script(self, widget, data=None):
-        model, parentIter = self.treeView.get_selection().get_selected()
-        newScript = model.Script("New Script", "# Enter script contents")
-        newIter = model.append_item(newScript, parentIter)
-        self.treeView.expand_to_path(model.get_path(newIter))
+        theModel, parentIter = self.treeView.get_selection().get_selected()
+        newScript = model.Script("New Script", "# Enter script code")
+        newIter = theModel.append_item(newScript, parentIter)
+        self.treeView.expand_to_path(theModel.get_path(newIter))
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
 
@@ -705,11 +764,15 @@ class ConfigWindow:
         
     def on_show_about(self, widget, data=None):
         dlg = gtk.AboutDialog()
-        dlg.set_name("AutoKey")
+        dlg.set_name("AutoKey (GTK UI)")
         dlg.set_comments("A desktop automation utility for Linux and X11.")
-        dlg.set_version(autokeygtk.autokey.VERSION)
+        dlg.set_version(autokey.autokey.VERSION)
         p = gtk.gdk.pixbuf_new_from_file(ICON_FILE)
+        p = p.scale_simple(100, 100, gtk.gdk.INTERP_BILINEAR)
         dlg.set_logo(p)
+        dlg.set_website(WEBSITE)
+        dlg.set_authors(["Chris Dekter (Developer) <cdekter@gmail.com>",
+                        "Sam Peterson (Original developer) <peabodyenator@gmail.com>"])
         dlg.run()
         dlg.destroy()
         

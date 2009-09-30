@@ -30,7 +30,7 @@ from Xlib import X, XK, display, error
 from Xlib.ext import record, xtest
 from Xlib.protocol import rq, event
 
-#from PyQt4.QtGui import QClipboard, QApplication
+import gtk
 
 logger = logging.getLogger("interface")
 
@@ -123,7 +123,8 @@ class XInterfaceBase(threading.Thread):
         self.rootWindow = self.localDisplay.screen().root
         self.lock = threading.RLock()
         self.lastChars = [] # TODO QT4 Workaround - remove me once the bug is fixed
-        #self.clipBoard = QApplication.clipboard() # TODO replace with GTK equivalent
+        self.clipBoard = gtk.Clipboard()
+        self.selection = gtk.Clipboard(selection="PRIMARY")
         
         self.__initMappings()
         
@@ -224,9 +225,10 @@ class XInterfaceBase(threading.Thread):
                 
     def send_string_clipboard(self, string):
         logger.debug("Sending string: %r", string)
-        self.sem = threading.Semaphore(0)
-        self.app.exec_in_main(self.__fillSelection, string)
-        self.sem.acquire()
+        #self.sem = threading.Semaphore(0)
+        #self.app.exec_in_main(self.__fillSelection, string)
+        self.__fillSelection(string)
+        #self.sem.acquire()
         
         focus = self.localDisplay.get_input_focus().focus
         xtest.fake_input(focus, X.ButtonPress, X.Button2)
@@ -234,8 +236,8 @@ class XInterfaceBase(threading.Thread):
         logger.debug("Send via clipboard done")
         
     def __fillSelection(self, string):
-        self.clipBoard.setText(string, QClipboard.Selection)
-        self.sem.release()
+        self.selection.set_text(string.encode("utf-8"))
+        #self.sem.release()
     
     def send_string(self, string):
         """
