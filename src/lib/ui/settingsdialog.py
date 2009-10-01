@@ -77,7 +77,7 @@ class SettingsDialog:
         self.atspiButton.set_active(ConfigManager.SETTINGS[INTERFACE_TYPE] == iomediator.ATSPI_INTERFACE)
         self.atspiButton.set_sensitive(interface.HAS_ATSPI)
         
-        self.checkBox.set_active(ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND])
+        #self.checkBox.set_active(ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND])
 
     def on_save(self, widget, data=None):
         ConfigManager.SETTINGS[PROMPT_TO_SAVE] = self.promptToSaveCheckbox.get_active()
@@ -93,7 +93,7 @@ class SettingsDialog:
         else:
             ConfigManager.SETTINGS[INTERFACE_TYPE] = iomediator.ATSPI_INTERFACE 
             
-        ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND] = self.checkBox.get_active()
+        #ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND] = self.checkBox.get_active()
         
         
         self.showConfigDlg.save(self.configManager.configHotkey)

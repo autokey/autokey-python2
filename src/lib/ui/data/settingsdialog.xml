@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!--Generated with glade3 3.4.5 on Wed Sep  2 17:26:32 2009 --><interface>
+<?xml version="1.0"?>
+<!--Generated with glade3 3.4.5 on Thu Oct  1 12:02:17 2009 -->
+<interface>
   <object class="GtkDialog" id="settingsdialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">AutoKey - Preferences</property>
@@ -47,7 +49,6 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">Prompt for unsaved changes</property>
-                                    
                                     <property name="draw_indicator">True</property>
                                   </object>
                                 </child>
@@ -56,7 +57,6 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">Show a tray icon (requires restart)</property>
-                                    
                                     <property name="draw_indicator">True</property>
                                   </object>
                                   <packing>
@@ -73,7 +73,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Main Window&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                     </child>
@@ -97,7 +96,6 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">Allow keyboard navigation of popup menu</property>
-                                    
                                     <property name="draw_indicator">True</property>
                                   </object>
                                 </child>
@@ -106,7 +104,6 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">Sort menu items with most frequently used first</property>
-                                    
                                     <property name="draw_indicator">True</property>
                                   </object>
                                   <packing>
@@ -123,7 +120,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Popup Menu&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                       <packing>
@@ -147,7 +143,6 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="label" translatable="yes">Enable undo by pressing backspace</property>
-                                
                                 <property name="draw_indicator">True</property>
                               </object>
                             </child>
@@ -159,7 +154,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Expansions&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                       <packing>
@@ -176,7 +170,6 @@
                 <property name="label" translatable="yes">General</property>
               </object>
               <packing>
-                
                 <property name="tab_fill">False</property>
               </packing>
             </child>
@@ -236,7 +229,6 @@
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">Set</property>
-                                    
                                     <signal handler="on_setMonitorButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -252,7 +244,6 @@
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">gtk-clear</property>
                                     <property name="use_stock">True</property>
-                                    
                                     <signal handler="on_clearMonitorButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -270,7 +261,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Toggle monitoring using a hotkey&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                     </child>
@@ -317,7 +307,6 @@
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">Set</property>
-                                    
                                     <signal handler="on_setConfigButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -333,7 +322,6 @@
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">gtk-clear</property>
                                     <property name="use_stock">True</property>
-                                    
                                     <signal handler="on_clearConfigButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -351,7 +339,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Show configuration window using a hotkey&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                       <packing>
@@ -401,7 +388,6 @@
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">Set</property>
-                                    
                                     <signal handler="on_setPopupButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -417,7 +403,6 @@
                                     <property name="receives_default">True</property>
                                     <property name="label" translatable="yes">gtk-clear</property>
                                     <property name="use_stock">True</property>
-                                    
                                     <signal handler="on_clearPopupButton_pressed" name="clicked"/>
                                   </object>
                                   <packing>
@@ -435,7 +420,6 @@
                             <property name="label" translatable="yes">&lt;b&gt;Show abbreviation popup using a hotkey&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                       <packing>
@@ -445,7 +429,6 @@
                   </object>
                 </child>
               </object>
-              
             </child>
             <child type="tab">
               <object class="GtkLabel" id="label2">
@@ -453,7 +436,6 @@
                 <property name="label" translatable="yes">Special Hotkeys</property>
               </object>
               <packing>
-                
                 <property name="position">1</property>
                 <property name="tab_fill">False</property>
               </packing>
@@ -504,7 +486,6 @@ it to take effect.</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">X Record - Preferred option when using X.org server v1.5 or older</property>
-                                    
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                     <property name="group">xEvdevButton</property>
@@ -518,7 +499,6 @@ it to take effect.</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">X EvDev - Preferred option when using X.org server v1.6 or newer</property>
-                                    
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                   </object>
@@ -531,7 +511,6 @@ it to take effect.</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="label" translatable="yes">AT-SPI - Fallback option for Gnome users when other methods fail</property>
-                                    
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                     <property name="group">xEvdevButton</property>
@@ -550,13 +529,11 @@ it to take effect.</property>
                             <property name="label" translatable="yes">&lt;b&gt;Interface Type&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
-                          
                         </child>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel" id="label11">
-                        <property name="visible">True</property>
                         <property name="xalign">0</property>
                         <property name="label" translatable="yes">Enable this option only if you experience randomly garbled text in KDE4</property>
                       </object>
@@ -566,10 +543,8 @@ it to take effect.</property>
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="checkBox">
-                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Enable QT4 workaround</property>
-                        
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
@@ -579,7 +554,6 @@ it to take effect.</property>
                   </object>
                 </child>
               </object>
-              
             </child>
             <child type="tab">
               <object class="GtkLabel" id="label3">
@@ -587,7 +561,6 @@ it to take effect.</property>
                 <property name="label" translatable="yes">Interface</property>
               </object>
               <packing>
-                
                 <property name="position">2</property>
                 <property name="tab_fill">False</property>
               </packing>
@@ -608,7 +581,6 @@ it to take effect.</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_cancel" name="clicked"/>
               </object>
             </child>
@@ -621,7 +593,6 @@ it to take effect.</property>
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_save" name="clicked"/>
               </object>
               <packing>
@@ -636,5 +607,24 @@ it to take effect.</property>
         </child>
       </object>
     </child>
-  <action-widgets><action-widget response="0">promptToSaveCheckbox</action-widget><action-widget response="0">showTrayCheckbox</action-widget><action-widget response="0">allowKbNavCheckbox</action-widget><action-widget response="0">sortByUsageCheckbox</action-widget><action-widget response="0">enableUndoCheckbox</action-widget><action-widget response="0">setMonitorButton</action-widget><action-widget response="0">clearMonitorButton</action-widget><action-widget response="0">setConfigButton</action-widget><action-widget response="0">clearConfigButton</action-widget><action-widget response="0">setPopupButton</action-widget><action-widget response="0">clearPopupButton</action-widget><action-widget response="0">xRecordButton</action-widget><action-widget response="0">xEvdevButton</action-widget><action-widget response="0">atspiButton</action-widget><action-widget response="0">checkBox</action-widget><action-widget response="0">button1</action-widget><action-widget response="0">button2</action-widget></action-widgets></object>
+    <action-widgets>
+      <action-widget response="0">promptToSaveCheckbox</action-widget>
+      <action-widget response="0">showTrayCheckbox</action-widget>
+      <action-widget response="0">allowKbNavCheckbox</action-widget>
+      <action-widget response="0">sortByUsageCheckbox</action-widget>
+      <action-widget response="0">enableUndoCheckbox</action-widget>
+      <action-widget response="0">setMonitorButton</action-widget>
+      <action-widget response="0">clearMonitorButton</action-widget>
+      <action-widget response="0">setConfigButton</action-widget>
+      <action-widget response="0">clearConfigButton</action-widget>
+      <action-widget response="0">setPopupButton</action-widget>
+      <action-widget response="0">clearPopupButton</action-widget>
+      <action-widget response="0">xRecordButton</action-widget>
+      <action-widget response="0">xEvdevButton</action-widget>
+      <action-widget response="0">atspiButton</action-widget>
+      <action-widget response="0">checkBox</action-widget>
+      <action-widget response="0">button1</action-widget>
+      <action-widget response="0">button2</action-widget>
+    </action-widgets>
+  </object>
 </interface>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Wed Sep  2 17:26:32 2009 -->
+<!--Generated with glade3 3.4.5 on Thu Oct  1 12:02:17 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="settingsdialog">
     <property name="border_width">5</property>
@@ -575,7 +575,6 @@ it to take effect.</property>
                     </child>
                     <child>
                       <widget class="GtkLabel" id="label11">
-                        <property name="visible">True</property>
                         <property name="xalign">0</property>
                         <property name="label" translatable="yes">Enable this option only if you experience randomly garbled text in KDE4</property>
                       </widget>
@@ -585,7 +584,6 @@ it to take effect.</property>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="checkBox">
-                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="label" translatable="yes">Enable QT4 workaround</property>
                         <property name="response_id">0</property>
