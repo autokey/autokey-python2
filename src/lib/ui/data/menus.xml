@@ -50,7 +50,7 @@
             <toolitem action="record-keystrokes" />
         </toolbar>
         <popup name="Context">
-            <menuitem action="new-top-folder" />
+<!--            <menuitem action="new-top-folder" /> -->
             <menuitem action="new-folder" />
             <menuitem action="new-phrase" />
             <menuitem action="new-script" />

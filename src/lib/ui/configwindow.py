@@ -483,8 +483,8 @@ class ConfigWindow:
                    ("create", None, "Create..."),
                    ("new-top-folder", "folder-new", "New _Top-Level Folder", "", "Create a new top-level phrase folder", self.on_new_topfolder),
                    ("new-folder", "folder-new", "New _Folder", "", "Create a new phrase folder in the current folder", self.on_new_folder),
-                   ("new-phrase", gtk.STOCK_NEW, "New _Phrase", "", "Create a new phrase in the current folder", self.on_new_phrase),
-                   ("new-script", gtk.STOCK_NEW, "New _Script", "", "Create a new script in the current folder", self.on_new_script),
+                   ("new-phrase", gtk.STOCK_NEW, "New _Phrase", "<control>n", "Create a new phrase in the current folder", self.on_new_phrase),
+                   ("new-script", gtk.STOCK_NEW, "New _Script", "<control><shift>n", "Create a new script in the current folder", self.on_new_script),
                    ("save", gtk.STOCK_SAVE, "_Save", None, "Save changes to current item", self.on_save),
                    ("close-window", gtk.STOCK_CLOSE, "_Close window", None, "Close the configuration window", self.on_close),
                    ("quit", gtk.STOCK_QUIT, "_Quit", None, "Completely exit AutoKey", self.on_quit),
@@ -492,9 +492,9 @@ class ConfigWindow:
                    #("cut-item", gtk.STOCK_CUT, "Cu_t Item", "", "Cut the selected item", self.on_cut_item),
                    #("copy-item", gtk.STOCK_COPY, "_Copy Item", "", "Copy the selected item", self.on_copy_item),
                    #("paste-item", gtk.STOCK_PASTE, "_Paste Item", "", "Paste the last cut/copied item", self.on_paste_item),
-                   ("delete-item", gtk.STOCK_DELETE, "_Delete Item", None, "Delete the selected item", self.on_delete_item),
-                   ("undo", gtk.STOCK_UNDO, "_Undo", None, "Undo the last edit", self.on_undo),
-                   ("redo", gtk.STOCK_REDO, "_Redo", None, "Redo the last undone edit", self.on_redo),
+                   ("delete-item", gtk.STOCK_DELETE, "_Delete Item", "<control>d", "Delete the selected item", self.on_delete_item),
+                   ("undo", gtk.STOCK_UNDO, "_Undo", "<control>z", "Undo the last edit", self.on_undo),
+                   ("redo", gtk.STOCK_REDO, "_Redo", "<control><shift>z", "Redo the last undone edit", self.on_redo),
                    ("preferences", gtk.STOCK_PREFERENCES, "_Preferences", "", "Additional options", self.on_advanced_settings),
                    ("View", None, "_View"),
                    #("Settings", None, "_Settings", None, None, None),
@@ -565,21 +565,24 @@ class ConfigWindow:
             
     def save_completed(self):
         self.saveButton.set_sensitive(False)
+        self.uiManager.get_action("/MenuBar/File/save").set_sensitive(False)        
         self.app.config_altered()
         
     def set_dirty(self, dirty):
         self.dirty = dirty
+        self.uiManager.get_action("/MenuBar/File/save").set_sensitive(dirty)
         self.saveButton.set_sensitive(dirty)
         self.revertButton.set_sensitive(dirty)
         
     def update_actions(self, item):
         canCreate = isinstance(item, model.Folder)
         
-        self.uiManager.get_action("/MenuBar/File/create").set_sensitive(canCreate)
-        self.uiManager.get_action("/MenuBar/File/create/new-top-folder").set_sensitive(canCreate)
+        self.uiManager.get_action("/MenuBar/File/create").set_sensitive(True)
+        self.uiManager.get_action("/MenuBar/File/create/new-top-folder").set_sensitive(True)
         self.uiManager.get_action("/MenuBar/File/create/new-folder").set_sensitive(canCreate)
         self.uiManager.get_action("/MenuBar/File/create/new-phrase").set_sensitive(canCreate)
         self.uiManager.get_action("/MenuBar/File/create/new-script").set_sensitive(canCreate)
+        self.uiManager.get_action("/MenuBar/File/save").set_sensitive(False)
         self.saveButton.set_sensitive(False)
         
         #self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(not canCreate)
@@ -587,6 +590,7 @@ class ConfigWindow:
         self.uiManager.get_action("/MenuBar/Edit/record-keystrokes").set_sensitive(isinstance(item, model.Script))
         self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(False)
         self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(False)
+
         
     def set_undo_available(self, state):
         self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(state)

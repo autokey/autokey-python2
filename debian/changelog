@@ -1,3 +1,12 @@
+autokey-gtk (0.60.7-0~jaunty) jaunty; urgency=low
+
+  * Fix Save menu item being available when it should not be
+  * Remove New Top Level Folder from context menu
+  * Add keyboard shortcuts for common config window actions (undo, redo, new)
+  * New top-level folder is always enabled (even when a folder is not selected)
+
+ -- Chris Dekter <cdekter@gmail.com>  Thu, 1 Oct 2009 12:38:05 +1000
+
 autokey-gtk (0.60.6-0~jaunty) jaunty; urgency=low
 
   * Implement GTK version of new UI using Glade extensively
