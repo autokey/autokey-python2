@@ -122,6 +122,7 @@ class XInterfaceBase(threading.Thread):
         self.localDisplay = display.Display()
         self.rootWindow = self.localDisplay.screen().root
         self.lock = threading.RLock()
+        self.dpyLock = threading.Lock()
         self.lastChars = [] # TODO QT4 Workaround - remove me once the bug is fixed
         self.clipBoard = gtk.Clipboard()
         self.selection = gtk.Clipboard(selection="PRIMARY")
@@ -439,6 +440,7 @@ class XInterfaceBase(threading.Thread):
                 raise
     
     def get_window_title(self):
+        self.dpyLock.acquire()
         try:
             windowvar = self.localDisplay.get_input_focus().focus
             wmname = windowvar.get_wm_name()
@@ -449,9 +451,11 @@ class XInterfaceBase(threading.Thread):
                 wmname = windowvar.get_wm_name()
 
             logger.debug("Window name: %s", str(wmname))
+            self.dpyLock.release()
             return str(wmname)
         except:
             logger.debug("Unable to determine active window name")
+            self.dpyLock.release()
             return ""
 
 

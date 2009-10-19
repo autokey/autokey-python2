@@ -1,3 +1,9 @@
+autokey-gtk (0.60.7a-0~jaunty) jaunty; urgency=low
+
+  * Fix a few issues with window scripting library
+  
+ -- Chris Dekter <cdekter@gmail.com>  Tue, 20 Oct 2009 10:38:05 +1000
+
 autokey-gtk (0.60.7-0~jaunty) jaunty; urgency=low
 
   * Add window management capabilities to scripting API
