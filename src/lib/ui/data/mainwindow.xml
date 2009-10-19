@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!--Generated with glade3 3.4.5 on Wed Sep  2 15:03:46 2009 --><interface>
+<?xml version="1.0"?>
+<!--Generated with glade3 3.4.5 on Thu Oct  1 16:29:57 2009 -->
+<interface>
   <object class="GtkWindow" id="mainwindow">
     <property name="title" translatable="yes">AutoKey - Configuration</property>
     <property name="default_width">600</property>
@@ -9,44 +11,41 @@
       <object class="GtkVBox" id="vbox">
         <property name="visible">True</property>
         <child>
-          <object class="GtkAlignment" id="alignment1">
+          <object class="GtkHPaned" id="hpaned">
             <property name="visible">True</property>
-            <property name="top_padding">5</property>
-            <property name="bottom_padding">5</property>
-            <property name="left_padding">5</property>
-            <property name="right_padding">5</property>
+            <property name="can_focus">True</property>
+            <property name="position">150</property>
+            <property name="position_set">True</property>
             <child>
-              <object class="GtkHPaned" id="hpaned">
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="position">150</property>
-                <property name="position_set">True</property>
+                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                <property name="shadow_type">GTK_SHADOW_IN</property>
                 <child>
-                  <object class="GtkScrolledWindow" id="scrolledwindow1">
+                  <object class="GtkTreeView" id="treeWidget">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                    <property name="shadow_type">GTK_SHADOW_IN</property>
-                    <child>
-                      <object class="GtkTreeView" id="treeWidget">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="headers_clickable">True</property>
-                        <signal handler="on_drag_data_get" name="drag_data_get"/>
-                        <signal handler="on_treeview_clicked" name="button_press_event"/>
-                        <signal handler="on_treeWidget_row_activated" name="row_activated"/>
-                        <signal handler="on_tree_selection_changed" name="cursor_changed"/>
-                        <signal handler="on_drag_data_received" name="drag_data_received"/>
-                        <signal handler="on_drag_drop" name="drag_drop"/>
-                      </object>
-                    </child>
+                    <signal handler="on_drag_data_get" name="drag_data_get"/>
+                    <signal handler="on_treeview_clicked" name="button_press_event"/>
+                    <signal handler="on_treeWidget_row_activated" name="row_activated"/>
+                    <signal handler="on_tree_selection_changed" name="cursor_changed"/>
+                    <signal handler="on_drag_data_received" name="drag_data_received"/>
+                    <signal handler="on_drag_drop" name="drag_drop"/>
                   </object>
-                  <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">True</property>
-                  </packing>
                 </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAlignment" id="alignment1">
+                <property name="visible">True</property>
+                <property name="bottom_padding">5</property>
+                <property name="right_padding">5</property>
                 <child>
                   <object class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
@@ -72,7 +71,6 @@
                             <property name="receives_default">True</property>
                             <property name="label" translatable="yes">gtk-save</property>
                             <property name="use_stock">True</property>
-                            
                             <signal handler="on_save" name="clicked"/>
                           </object>
                         </child>
@@ -83,7 +81,6 @@
                             <property name="receives_default">True</property>
                             <property name="label" translatable="yes">gtk-revert-to-saved</property>
                             <property name="use_stock">True</property>
-                            
                             <signal handler="on_reset" name="clicked"/>
                           </object>
                           <packing>
@@ -97,12 +94,12 @@
                       </packing>
                     </child>
                   </object>
-                  <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">True</property>
-                  </packing>
                 </child>
               </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
             </child>
           </object>
           <packing>

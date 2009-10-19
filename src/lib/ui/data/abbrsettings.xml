@@ -1,4 +1,19 @@
-<?xml version="1.0" ?><!--Generated with glade3 3.4.5 on Wed Sep  2 11:56:13 2009 --><interface><object class="GtkListStore" id="model1"><columns><column type="gchararray"/></columns><data><row><col id="0">Default</col></row><row><col id="0">Space and Enter</col></row></data></object>
+<?xml version="1.0"?>
+<!--Generated with glade3 3.4.5 on Fri Oct  2 11:21:20 2009 -->
+<interface>
+  <object class="GtkListStore" id="model1">
+    <columns>
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">Default</col>
+      </row>
+      <row>
+        <col id="0">Space and Enter</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkDialog" id="abbrsettings">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Set Abbreviation</property>
@@ -30,6 +45,7 @@
                   <object class="GtkEntry" id="abbrEntry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="is_focus">True</property>
                     <property name="activates_default">True</property>
                   </object>
                   <packing>
@@ -51,8 +67,14 @@
                   <object class="GtkComboBox" id="wordCharCombo">
                     <property name="visible">True</property>
                     <property name="active">1</property>
-                    
-                  <property name="model">model1</property><child><object class="GtkCellRendererText" id="renderer1"/><attributes><attribute name="text">0</attribute></attributes></child></object>
+                    <property name="model">model1</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="renderer1"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
                   <packing>
                     <property name="fill">False</property>
                     <property name="padding">5</property>
@@ -66,7 +88,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Remove typed abbreviation</property>
-                
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -78,7 +99,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Omit trigger character</property>
-                
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -90,7 +110,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Match phrase case to typed abbreviation</property>
-                
                 <property name="draw_indicator">True</property>
                 <signal handler="on_matchCaseCheckbox_stateChanged" name="toggled"/>
               </object>
@@ -103,7 +122,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Ignore case of typed abbreviation</property>
-                
                 <property name="draw_indicator">True</property>
                 <signal handler="on_ignoreCaseCheckbox_stateChanged" name="toggled"/>
               </object>
@@ -116,7 +134,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Trigger when typed as part of a word</property>
-                
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -128,7 +145,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label" translatable="yes">Trigger immediately (don't require a trigger character)</property>
-                
                 <property name="draw_indicator">True</property>
                 <signal handler="on_immediateCheckbox_stateChanged" name="toggled"/>
               </object>
@@ -152,7 +168,6 @@
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_cancel" name="clicked"/>
               </object>
             </child>
@@ -165,7 +180,6 @@
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_ok" name="clicked"/>
               </object>
               <packing>
@@ -180,5 +194,15 @@
         </child>
       </object>
     </child>
-  <action-widgets><action-widget response="0">removeTypedCheckbox</action-widget><action-widget response="0">omitTriggerCheckbox</action-widget><action-widget response="0">matchCaseCheckbox</action-widget><action-widget response="0">ignoreCaseCheckbox</action-widget><action-widget response="0">triggerInsideCheckbox</action-widget><action-widget response="0">immediateCheckbox</action-widget><action-widget response="0">cancelButton</action-widget><action-widget response="0">okButton</action-widget></action-widgets></object>
+    <action-widgets>
+      <action-widget response="0">removeTypedCheckbox</action-widget>
+      <action-widget response="0">omitTriggerCheckbox</action-widget>
+      <action-widget response="0">matchCaseCheckbox</action-widget>
+      <action-widget response="0">ignoreCaseCheckbox</action-widget>
+      <action-widget response="0">triggerInsideCheckbox</action-widget>
+      <action-widget response="0">immediateCheckbox</action-widget>
+      <action-widget response="0">cancelButton</action-widget>
+      <action-widget response="0">okButton</action-widget>
+    </action-widgets>
+  </object>
 </interface>

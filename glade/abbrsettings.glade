@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Wed Sep  2 11:56:13 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Oct  2 11:21:20 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="abbrsettings">
     <property name="border_width">5</property>
@@ -33,6 +33,7 @@
                   <widget class="GtkEntry" id="abbrEntry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="is_focus">True</property>
                     <property name="activates_default">True</property>
                   </widget>
                   <packing>

@@ -16,12 +16,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import gtk
+import gtk, shutil, os
 
 from autokey.configmanager import *
 from autokey import iomediator, interface, model
 from dialogs import GlobalHotkeyDialog
 import configwindow
+
+DESKTOP_FILE = "/usr/share/applications/autokey.desktop"
+AUTOSTART_FILE = os.path.expanduser("~/.config/autostart/autokey.desktop")
 
 class SettingsDialog:
     
@@ -36,12 +39,14 @@ class SettingsDialog:
         self.configManager = configManager
         
         # General Settings
+        self.autoStartCheckbox = builder.get_object("autoStartCheckbox")
         self.promptToSaveCheckbox = builder.get_object("promptToSaveCheckbox")
         self.showTrayCheckbox = builder.get_object("showTrayCheckbox")
         self.allowKbNavCheckbox= builder.get_object("allowKbNavCheckbox")
         self.sortByUsageCheckbox = builder.get_object("sortByUsageCheckbox")
         self.enableUndoCheckbox = builder.get_object("enableUndoCheckbox")
         
+        self.autoStartCheckbox.set_active(os.path.exists(AUTOSTART_FILE))
         self.promptToSaveCheckbox.set_active(ConfigManager.SETTINGS[PROMPT_TO_SAVE])
         self.showTrayCheckbox.set_active(ConfigManager.SETTINGS[SHOW_TRAY_ICON])
         self.allowKbNavCheckbox.set_active(ConfigManager.SETTINGS[MENU_TAKES_FOCUS])
@@ -80,6 +85,13 @@ class SettingsDialog:
         #self.checkBox.set_active(ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND])
 
     def on_save(self, widget, data=None):
+        if self.autoStartCheckbox.get_active():
+            if not os.path.exists(AUTOSTART_FILE):
+                shutil.copy(DESKTOP_FILE, AUTOSTART_FILE)
+        else:
+            if os.path.exists(AUTOSTART_FILE):
+                os.remove(AUTOSTART_FILE)
+    
         ConfigManager.SETTINGS[PROMPT_TO_SAVE] = self.promptToSaveCheckbox.get_active()
         ConfigManager.SETTINGS[SHOW_TRAY_ICON] = self.showTrayCheckbox.get_active()
         ConfigManager.SETTINGS[MENU_TAKES_FOCUS] = self.allowKbNavCheckbox.get_active()

@@ -10,7 +10,7 @@ Homepage: http://autokey.googlecode.com/
 
 Package: autokey-gtk
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-gtk2, python-gtksourceview2, python-glade2, python-xlib, python-notify
+Depends: ${python:Depends}, ${misc:Depends}, python-gtk2, python-gtksourceview2, python-glade2, python-xlib, python-notify, wmctrl
 XB-Python-Version: ${python:Versions}
 Conflicts: autokey
 Description: desktop automation utility

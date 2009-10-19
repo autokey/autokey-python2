@@ -1,4 +1,6 @@
-<?xml version="1.0" ?><!--Generated with glade3 3.4.5 on Tue Sep  1 23:34:10 2009 --><interface>
+<?xml version="1.0"?>
+<!--Generated with glade3 3.4.5 on Fri Oct  2 11:17:13 2009 -->
+<interface>
   <object class="GtkDialog" id="windowfiltersettings">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Set Window Filter</property>
@@ -25,6 +27,7 @@
               <object class="GtkEntry" id="triggerRegexEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="is_focus">True</property>
                 <property name="tooltip-text" translatable="yes">Enter a regular expression that matches the title of windows in which you want this item to trigger.</property>
                 <property name="activates_default">True</property>
                 <property name="truncate_multiline">True</property>
@@ -51,7 +54,6 @@
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_cancel" name="clicked"/>
               </object>
             </child>
@@ -64,7 +66,6 @@
                 <property name="receives_default">True</property>
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
-                
                 <signal handler="on_ok" name="clicked"/>
               </object>
               <packing>
@@ -79,5 +80,9 @@
         </child>
       </object>
     </child>
-  <action-widgets><action-widget response="0">cancelButton</action-widget><action-widget response="0">okButton</action-widget></action-widgets></object>
+    <action-widgets>
+      <action-widget response="0">cancelButton</action-widget>
+      <action-widget response="0">okButton</action-widget>
+    </action-widgets>
+  </object>
 </interface>

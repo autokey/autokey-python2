@@ -1,11 +1,17 @@
 autokey-gtk (0.60.7-0~jaunty) jaunty; urgency=low
 
-  * Fix Save menu item being available when it should not be
+  * Add window management capabilities to scripting API
+  * Add option to start automatically at login
+  * Fix Save menu item being available when it should not be  
   * Remove New Top Level Folder from context menu
   * Add keyboard shortcuts for common config window actions (undo, redo, new)
   * New top-level folder is always enabled (even when a folder is not selected)
+  * Remove unnecessary spacing from main window
+  * Spacing tweaks to Advanced Settings dialog
+  * Fix bug where keyboard was sometimes lost after resume from S3
+  * Flush event buffer after executing keyboard events from a script
 
- -- Chris Dekter <cdekter@gmail.com>  Thu, 1 Oct 2009 12:38:05 +1000
+ -- Chris Dekter <cdekter@gmail.com>  Mon, 19 Oct 2009 12:38:05 +1000
 
 autokey-gtk (0.60.6-0~jaunty) jaunty; urgency=low
 
