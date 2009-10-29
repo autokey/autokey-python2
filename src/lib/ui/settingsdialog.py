@@ -78,6 +78,7 @@ class SettingsDialog:
         self.checkBox = builder.get_object("checkBox")
         
         self.xRecordButton.set_active(ConfigManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_RECORD_INTERFACE)
+        self.xRecordButton.set_sensitive(interface.HAS_RECORD)
         self.xEvdevButton.set_active(ConfigManager.SETTINGS[INTERFACE_TYPE] == iomediator.X_EVDEV_INTERFACE)
         self.atspiButton.set_active(ConfigManager.SETTINGS[INTERFACE_TYPE] == iomediator.ATSPI_INTERFACE)
         self.atspiButton.set_sensitive(interface.HAS_ATSPI)

@@ -27,7 +27,12 @@ except ImportError:
     HAS_ATSPI = False
 
 from Xlib import X, XK, display, error
-from Xlib.ext import record, xtest
+try:
+    from Xlib.ext import record, xtest
+    HAS_RECORD = True
+except ImportError:
+    HAS_RECORD = False
+    
 from Xlib.protocol import rq, event
 
 import gtk
@@ -316,6 +321,15 @@ class XInterfaceBase(threading.Thread):
         xtest.fake_input(self.rootWindow, X.KeyPress, keyCode)
         xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
         
+    def send_mouse_click(xCoord, yCoord, button, relative):
+        if relative:
+            focus = self.localDisplay.get_input_focus().focus
+            xtest.fake_input(focus, X.ButtonPress, button, x=xCoord, y=yCoord)
+            xtest.fake_input(focus, X.ButtonRelease, button, x=xCoord, y=yCoord)
+        else:
+            xtest.fake_input(self.rootWindow, X.ButtonPress, button, x=xCoord, y=yCoord)
+            xtest.fake_input(self.rootWindow, X.ButtonRelease, button, x=xCoord, y=yCoord)
+        
     def flush(self):
         self.localDisplay.flush()
         self.lastChars = []
@@ -507,7 +521,8 @@ class EvDevInterface(XInterfaceBase):
                     self._handleKeyRelease(keyCode)
                     
             if button:
-                self.mediator.handle_mouse_click()
+                ret = self.localDisplay.get_input_focus().focus.query_pointer()
+                self.mediator.handle_mouse_click(ret.root_x, ret.root_y, ret.win_x, ret.win_y, button)
                 
                 
     def __connect(self):
@@ -600,7 +615,9 @@ class XRecordInterface(XInterfaceBase):
             elif event.type == X.KeyRelease:
                 self._handleKeyRelease(event.detail)
             elif event.type == X.ButtonPress:
-                self.mediator.handle_mouse_click()
+                focus = self.localDisplay.get_input_focus().focus
+                rel = focus.translate_coords(self.rootWindow, event.root_x, event.root_y)
+                self.mediator.handle_mouse_click(event.root_x, event.root_y, rel.x, rel.y, event.detail)
 
 class AtSpiInterface(XInterfaceBase):
     
@@ -627,7 +644,8 @@ class AtSpiInterface(XInterfaceBase):
             self._handleKeyRelease(event.hw_code)
             
     def __processMouseEvent(self, event):
-        self.mediator.handle_mouse_click()
+        # TODO get actual event coords and button
+        self.mediator.handle_mouse_click(0, 0, 0, 0, 0)
     
     def __processWindowEvent(self, event):
         #windowName = event.host_application.name.split('|')[1]

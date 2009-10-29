@@ -22,7 +22,7 @@ import gtk, gtk.glade, gtksourceview2
 from dialogs import *
 from settingsdialog import SettingsDialog
 from autokey.configmanager import *
-from autokey.iomediator import KeyRecorder
+from autokey.iomediator import Recorder
 from autokey import model
 import autokey.autokey
 
@@ -384,6 +384,9 @@ class ScriptPage:
         self.buffer.insert_at_cursor(keyString)
         #self.scriptCodeEditor.setCursorPosition(line, pos + len(keyString))
         
+    def append_mouseclick(self, xCoord, yCoord, button):
+        self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d)\n" % (xCoord, yCoord, button))
+        
     def undo(self):
         self.buffer.undo()
         self.parentWindow.set_undo_available(self.buffer.can_undo())
@@ -497,6 +500,7 @@ class ConfigWindow:
                    ("redo", gtk.STOCK_REDO, "_Redo", "<control><shift>z", "Redo the last undone edit", self.on_redo),
                    ("preferences", gtk.STOCK_PREFERENCES, "_Preferences", "", "Additional options", self.on_advanced_settings),
                    ("View", None, "_View"),
+                   ("script-error", gtk.STOCK_DIALOG_ERROR, "Vie_w script error", None, "View script error information", self.on_show_error),                   
                    #("Settings", None, "_Settings", None, None, None),
                    #("advanced", gtk.STOCK_PREFERENCES, "_Advanced Settings", "", "Advanced configuration options", self.on_advanced_settings),
                    ("Help", None, "_Help"),
@@ -551,7 +555,7 @@ class ConfigWindow:
         self.set_default_size(width, height)
         self.hpaned.set_position(ConfigManager.SETTINGS[HPANE_POSITION])
         
-        self.recorder = KeyRecorder(self.scriptPage)
+        self.recorder = Recorder(self.scriptPage)
         
     def __addToolbar(self):
         toolbar = self.uiManager.get_widget('/Toolbar')
@@ -744,6 +748,9 @@ class ConfigWindow:
             self.vbox.remove(self.uiManager.get_widget('/Toolbar'))
             
         ConfigManager.SETTINGS[SHOW_TOOLBAR] = widget.get_active()
+        
+    def on_show_error(self, widget, data=None):
+        self.app.show_script_error()
     
     # Settings Menu
     

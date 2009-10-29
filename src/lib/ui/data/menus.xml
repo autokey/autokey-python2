@@ -28,6 +28,7 @@
 		</menu>
                 <menu action="View">
                     <menuitem action="toolbar" />
+                    <menuitem action="script-error" />
                 </menu>
 <!--		<menu action="Settings">
 			<menuitem action="enable-monitoring" />

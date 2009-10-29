@@ -191,9 +191,9 @@ class IoMediator(threading.Thread):
                 
             self.queue.task_done()
             
-    def handle_mouse_click(self):
+    def handle_mouse_click(self, rootX, rootY, relX, relY, button):
         for target in self.listeners:
-            target.handle_mouseclick()
+            target.handle_mouseclick(rootX, rootY, relX, relY, button)
         
     # Methods for expansion service ----
         
@@ -303,6 +303,9 @@ class IoMediator(threading.Thread):
             self.interface.send_key(Key.BACKSPACE)
             
         #self.release_lock()
+        
+    def send_mouse_click(x, y, button, relative):
+        self.interface.send_mouse_click(x, y, button, relative)
             
     def flush(self):
         self.interface.flush()
@@ -363,11 +366,14 @@ class KeyGrabber:
     def handle_hotkey(self, key, modifiers, windowName):
         pass
     
-    def handle_mouseclick(self):
+    def handle_mouseclick(self, rootX, rootY, relX, relY):
         pass
     
 
-class KeyRecorder(KeyGrabber):
+class Recorder(KeyGrabber):
+    """
+    Recorder used by the record macro functionality
+    """
     
     def stop(self):
         IoMediator.listeners.remove(self)
@@ -378,4 +384,7 @@ class KeyRecorder(KeyGrabber):
             
     def handle_hotkey(self, key, modifiers, windowName):
         self.targetParent.append_hotkey(key, modifiers)
-    
+        
+    def handle_mouseclick(self, rootX, rootY, relX, relY, button):
+        self.targetParent.append_mouseclick(relX, relY, button)
+            

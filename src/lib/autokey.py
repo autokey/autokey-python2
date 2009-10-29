@@ -35,7 +35,7 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 APP_NAME = "AutoKey"
 CATALOG = ""
 PROGRAM_NAME = _("AutoKey")
-VERSION = "0.60.7a"
+VERSION = "0.61.0"
 DESCRIPTION = _("Desktop automation utility")
 #LICENSE = KAboutData.License_GPL_V3
 COPYRIGHT = _("(c) 2009 Chris Dekter")
@@ -254,6 +254,21 @@ class Application:
             dlg.format_secondary_text(details)
         dlg.run()
         dlg.destroy()
+        
+    def show_script_error(self):
+        """
+        Show the last script error (if any)
+        """
+        if self.service.scriptRunner.error != '':
+            dlg = gtk.MessageDialog(type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK,
+                                     message_format=self.service.scriptRunner.error)
+            self.service.scriptRunner.error = ''
+        else:
+            dlg = gtk.MessageDialog(type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK,
+                                     message_format=_("No error information available"))
+                        
+        dlg.run()
+        dlg.destroy()        
         
     def show_popup_menu(self, folders=[], items=[], onDesktop=True, title=None):
         self.menu = ui.popupmenu.PopupMenu(self.service, folders, items, onDesktop, title)
