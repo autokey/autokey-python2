@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Fri Oct 30 12:54:26 2009 -->
+<!--Generated with glade3 3.4.5 on Fri Oct 30 16:24:33 2009 -->
 <interface>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">20</property>
@@ -24,7 +24,6 @@
         <child>
           <object class="GtkVBox" id="vbox1">
             <property name="visible">True</property>
-            <property name="spacing">2</property>
             <child>
               <object class="GtkLabel" id="label1">
                 <property name="visible">True</property>
@@ -32,6 +31,9 @@
                 <property name="label" translatable="yes">&lt;b&gt;Record a keyboard/mouse macro&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </object>
+              <packing>
+                <property name="padding">5</property>
+              </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="keyboardButton">
@@ -96,6 +98,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
+                <property name="padding">5</property>
                 <property name="position">3</property>
               </packing>
             </child>

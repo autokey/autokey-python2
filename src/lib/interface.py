@@ -635,7 +635,8 @@ class AtSpiInterface(XInterfaceBase):
     
     def __init__(self, mediator, app):
         XInterfaceBase.__init__(self, mediator, app)
-        self.registry = pyatspi.Registry        
+        self.registry = pyatspi.Registry
+        self.activeWindow = ""    
         
     def start(self):
         logger.info("AT-SPI interface thread starting")
@@ -656,14 +657,23 @@ class AtSpiInterface(XInterfaceBase):
             self._handleKeyRelease(event.hw_code)
             
     def __processMouseEvent(self, event):
-        # TODO get actual event coords and button
-        print repr(event)
-        print dir(event)
-        self.mediator.handle_mouse_click(0, 0, 0, 0, 0)
+        if event.type[-1] == 'p':
+            button = int(event.type[-2])
+            
+            focus = self.localDisplay.get_input_focus().focus
+            try:
+                rel = focus.translate_coords(self.rootWindow, event.detail1, event.detail2)
+                relX = rel.x
+                relY = rel.y
+            except:
+                relX = 0
+                relY = 0
+            
+            self.mediator.handle_mouse_click(event.detail1, event.detail2, relX, relY, button)
     
     def __processWindowEvent(self, event):
-        #windowName = event.host_application.name.split('|')[1]
-        self.activeWindow = event.host_application.name
+        self.activeWindow = event.source_name
+        self.mediator.handle_mouse_click(0, 0, 0, 0, 0)
     
     def get_window_title(self):
         logger.debug("Window name: %s", self.activeWindow)
