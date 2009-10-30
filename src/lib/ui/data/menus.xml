@@ -22,7 +22,7 @@
                         <menuitem action="undo" />
                         <menuitem action="redo" />
                         <separator />
-                        <menuitem action="record-keystrokes" />
+                        <menuitem action="record" />
                         <separator />
                         <menuitem action="preferences" />
 		</menu>
@@ -48,7 +48,7 @@
             <toolitem action="undo" />
             <toolitem action="redo" />
             <separator />
-            <toolitem action="record-keystrokes" />
+            <toolitem action="record" />
         </toolbar>
         <popup name="Context">
 <!--            <menuitem action="new-top-folder" /> -->

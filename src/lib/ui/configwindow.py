@@ -372,20 +372,29 @@ class ScriptPage:
             return False
         
         return True
+        
+    def start_record(self):
+        self.buffer.insert(self.buffer.get_end_iter(), "\n")
+        
+    def start_key_sequence(self):
+        self.buffer.insert(self.buffer.get_end_iter(), "keyboard.send_keys(\"")
+        
+    def end_key_sequence(self):
+        self.buffer.insert(self.buffer.get_end_iter(), "\")\n")        
     
     def append_key(self, key):
         #line, pos = self.buffer.getCursorPosition()
-        self.buffer.insert_at_cursor(key)
+        self.buffer.insert(self.buffer.get_end_iter(), key)
         #self.scriptCodeEditor.setCursorPosition(line, pos + len(key))
         
     def append_hotkey(self, key, modifiers):
         #line, pos = self.scriptCodeEditor.getCursorPosition()
         keyString = self.settingsWidget.build_hotkey_string(key, modifiers)
-        self.buffer.insert_at_cursor(keyString)
+        self.buffer.insert(self.buffer.get_end_iter(), keyString)
         #self.scriptCodeEditor.setCursorPosition(line, pos + len(keyString))
         
-    def append_mouseclick(self, xCoord, yCoord, button):
-        self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d)\n" % (xCoord, yCoord, button))
+    def append_mouseclick(self, xCoord, yCoord, button, windowTitle):
+        self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d) # %s\n" % (xCoord, yCoord, button, windowTitle))
         
     def undo(self):
         self.buffer.undo()
@@ -514,7 +523,7 @@ class ConfigWindow:
         toggleActions = [
                          #("enable-monitoring", None, "_Enable Monitoring", None, "Toggle monitoring on/off", self.on_enable_toggled),
                          ("toolbar", None, "_Show Toolbar", None, "Show/hide the toolbar", self.on_toggle_toolbar),
-                         ("record-keystrokes", gtk.STOCK_MEDIA_RECORD, "R_ecord Keystrokes", None, "Record keystrokes into a script", self.on_record_keystrokes),
+                         ("record", gtk.STOCK_MEDIA_RECORD, "R_ecord Macro", None, "Record a keyboard/mouse macro", self.on_record_keystrokes),
                          ]
         actionGroup.add_toggle_actions(toggleActions)
                 
@@ -563,8 +572,8 @@ class ConfigWindow:
         self.vbox.reorder_child(toolbar, 1)
         
     def cancel_record(self):
-        if self.uiManager.get_widget("/MenuBar/Edit/record-keystrokes").get_active():
-            self.uiManager.get_widget("/MenuBar/Edit/record-keystrokes").set_active(False)
+        if self.uiManager.get_widget("/MenuBar/Edit/record").get_active():
+            self.uiManager.get_widget("/MenuBar/Edit/record").set_active(False)
             self.recorder.stop()
             
     def save_completed(self):
@@ -591,7 +600,7 @@ class ConfigWindow:
         
         #self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(not canCreate)
         #self.uiManager.get_action("/MenuBar/Edit/paste-item").set_sensitive(canCreate and self.cutCopiedItem is not None)
-        self.uiManager.get_action("/MenuBar/Edit/record-keystrokes").set_sensitive(isinstance(item, model.Script))
+        self.uiManager.get_action("/MenuBar/Edit/record").set_sensitive(isinstance(item, model.Script))
         self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(False)
         self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(False)
 
@@ -735,9 +744,18 @@ class ConfigWindow:
         
     def on_record_keystrokes(self, widget, data=None):
         if widget.get_active():
-            self.recorder.start()
+            dlg = RecordDialog(self.ui, self.on_rec_response)
+            dlg.run()
         else:
             self.recorder.stop()
+            
+    def on_rec_response(self, response, recKb, recMouse, delay):
+        if response == gtk.RESPONSE_OK:
+            self.recorder.set_record_keyboard(recKb)
+            self.recorder.set_record_mouse(recMouse)
+            self.recorder.start(delay)
+        elif response == gtk.RESPONSE_CANCEL:
+            self.uiManager.get_widget("/MenuBar/Edit/record").set_active(False)
         
     # View Menu
     

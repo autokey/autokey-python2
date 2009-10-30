@@ -2,7 +2,7 @@
 import logging, sys, os, re
 import gtk, gtk.glade
 
-__all__ = ["validate", "EMPTY_FIELD_REGEX", "AbbrSettingsDialog", "HotkeySettingsDialog", "WindowFilterSettingsDialog"]
+__all__ = ["validate", "EMPTY_FIELD_REGEX", "AbbrSettingsDialog", "HotkeySettingsDialog", "WindowFilterSettingsDialog", "RecordDialog"]
 
 from autokey import model, iomediator
 import configwindow
@@ -340,3 +340,37 @@ class WindowFilterSettingsDialog(DialogBase):
     
     def valid(self):
         return True
+        
+        
+class RecordDialog(DialogBase):
+    
+    def __init__(self, parent, closure):
+        self.closure = closure
+        builder = configwindow.get_ui("recorddialog.xml")
+        self.ui = builder.get_object("recorddialog")
+        builder.connect_signals(self)
+        self.ui.set_transient_for(parent)
+        
+        self.keyboardButton = builder.get_object("keyboardButton")
+        self.mouseButton = builder.get_object("mouseButton")
+        self.spinButton = builder.get_object("spinButton")
+        
+    def get_record_keyboard(self):
+        return self.keyboardButton.get_active()
+        
+    def get_record_mouse(self):
+        return self.mouseButton.get_active()
+
+    def get_delay(self):
+        return self.spinButton.get_value_as_int()
+        
+    def on_response(self, widget, responseId):
+        self.closure(responseId, self.get_record_keyboard(), self.get_record_mouse(), self.get_delay())
+        
+    def on_cancel(self, widget, data=None):
+        self.ui.response(gtk.RESPONSE_CANCEL)
+        self.hide()
+            
+    def valid(self):
+        return True
+

@@ -321,14 +321,23 @@ class XInterfaceBase(threading.Thread):
         xtest.fake_input(self.rootWindow, X.KeyPress, keyCode)
         xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
         
-    def send_mouse_click(xCoord, yCoord, button, relative):
+    def send_mouse_click(self, xCoord, yCoord, button, relative):
+        # Get current pointer position so we can return it there
+        pos = self.rootWindow.query_pointer()
+
         if relative:
             focus = self.localDisplay.get_input_focus().focus
+            focus.warp_pointer(xCoord, yCoord)
             xtest.fake_input(focus, X.ButtonPress, button, x=xCoord, y=yCoord)
             xtest.fake_input(focus, X.ButtonRelease, button, x=xCoord, y=yCoord)
         else:
+            self.rootWindow.warp_pointer(xCoord, yCoord)
             xtest.fake_input(self.rootWindow, X.ButtonPress, button, x=xCoord, y=yCoord)
             xtest.fake_input(self.rootWindow, X.ButtonRelease, button, x=xCoord, y=yCoord)
+            
+        self.rootWindow.warp_pointer(pos.root_x, pos.root_y)
+            
+        self.flush()
         
     def flush(self):
         self.localDisplay.flush()
@@ -555,7 +564,6 @@ class EvDevInterface(XInterfaceBase):
                 
             if not self.connected:
                 time.sleep(10)
-        
 
 
 class XRecordInterface(XInterfaceBase):
@@ -616,8 +624,12 @@ class XRecordInterface(XInterfaceBase):
                 self._handleKeyRelease(event.detail)
             elif event.type == X.ButtonPress:
                 focus = self.localDisplay.get_input_focus().focus
-                rel = focus.translate_coords(self.rootWindow, event.root_x, event.root_y)
-                self.mediator.handle_mouse_click(event.root_x, event.root_y, rel.x, rel.y, event.detail)
+                try:
+                    rel = focus.translate_coords(self.rootWindow, event.root_x, event.root_y)
+                    self.mediator.handle_mouse_click(event.root_x, event.root_y, rel.x, rel.y, event.detail)
+                except:
+                    self.mediator.handle_mouse_click(event.root_x, event.root_y, 0, 0, event.detail)
+
 
 class AtSpiInterface(XInterfaceBase):
     
@@ -645,6 +657,8 @@ class AtSpiInterface(XInterfaceBase):
             
     def __processMouseEvent(self, event):
         # TODO get actual event coords and button
+        print repr(event)
+        print dir(event)
         self.mediator.handle_mouse_click(0, 0, 0, 0, 0)
     
     def __processWindowEvent(self, event):

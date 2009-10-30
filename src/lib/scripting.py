@@ -428,7 +428,7 @@ class Window:
         while waited < timeOut:
             retCode, output = self.__runWmctrl(["-l"])
             for line in output.split('\n'):
-                if regex.match(line.split(' ', 4)[-1]):
+                if regex.match(line[14:].split(' ', 1)[-1]):
                     return True
 
             time.sleep(0.3)
