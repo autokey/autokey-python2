@@ -394,7 +394,7 @@ class ScriptPage:
         #self.scriptCodeEditor.setCursorPosition(line, pos + len(keyString))
         
     def append_mouseclick(self, xCoord, yCoord, button, windowTitle):
-        self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d) # %s\n" % (xCoord, yCoord, button, windowTitle))
+        self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d) # %s\n" % (xCoord, yCoord, int(button), windowTitle))
         
     def undo(self):
         self.buffer.undo()
