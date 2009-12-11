@@ -24,6 +24,7 @@ TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
 ICON_FILE = "/usr/share/pixmaps/akicon.png"
+STATUS_ICON_FILE = "/usr/share/pixmaps/akicon-status.png"
 
 def gthreaded(f):
     
@@ -52,7 +53,7 @@ class Notifier(gobject.GObject):
         self.configManager = autokeyApp.service.configManager
         
         if ConfigManager.SETTINGS[SHOW_TRAY_ICON]:
-            self.icon = gtk.status_icon_new_from_file(ICON_FILE)
+            self.icon = gtk.status_icon_new_from_file(STATUS_ICON_FILE)
             self.update_tool_tip()
             self.icon.connect("popup_menu", self.on_popup_menu)
             self.icon.connect("activate", self.on_activate)

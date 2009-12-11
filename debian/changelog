@@ -1,9 +1,14 @@
-autokey-gtk (0.61.0b-0~jaunty) jaunty; urgency=low
+autokey-gtk (0.61.0b-0~karmic) karmic; urgency=low
 
+  [ Chris Dekter ]
   * Fix bug with sending newlines from scripts
   * Fix another crash in the EvDev daemon related to button conversions
+  * Change status icon to fit Karmic notification area
   
- -- Chris Dekter <cdekter@gmail.com>  Fri, 4 Dec 2009 10:38:05 +1000
+  [ Luke Faraone ]
+  * Fix l10n bug in daemon.py which caused breakage on package removal
+  
+ -- Chris Dekter <cdekter@gmail.com>  Fri, 11 Dec 2009 10:38:05 +1000
 
 autokey-gtk (0.61.0a-0~jaunty) jaunty; urgency=low
 
