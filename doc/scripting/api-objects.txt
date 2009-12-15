@@ -17,6 +17,7 @@ lib.scripting.Dialog.open_file	lib.scripting.Dialog-class.html#open_file
 lib.scripting.Dialog.password_dialog	lib.scripting.Dialog-class.html#password_dialog
 lib.scripting.Dialog.__runZenity	lib.scripting.Dialog-class.html#__runZenity
 lib.scripting.Dialog.list_menu_multi	lib.scripting.Dialog-class.html#list_menu_multi
+lib.scripting.Dialog.calendar	lib.scripting.Dialog-class.html#calendar
 lib.scripting.Dialog.input_dialog	lib.scripting.Dialog-class.html#input_dialog
 lib.scripting.Keyboard	lib.scripting.Keyboard-class.html
 lib.scripting.Keyboard.send_keys	lib.scripting.Keyboard-class.html#send_keys

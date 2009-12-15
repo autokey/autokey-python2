@@ -1,3 +1,10 @@
+autokey-gtk (0.61.1-0~karmic) karmic; urgency=low
+
+  * Fix bug in dialog.list_menu_multi()
+  * Add calendar() to Dialog class (courtesy of dv8box-goo@yahoo.com)
+
+ -- Chris Dekter <cdekter@gmail.com>  Wed, 16 Dec 2009 10:38:05 +1000
+
 autokey-gtk (0.61.0b-1~karmic) karmic; urgency=low
 
   * Packaging fix - add new status icon to setup.py

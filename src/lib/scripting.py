@@ -213,13 +213,13 @@ class Dialog:
             #optionNum += 1
             
         retCode, output = self.__runZenity(title, ["--list", "--checklist", "--text", message, "--column", " ", "--column", "Options"] + choices)
-        results = output.split()
+        results = output.split('|')
     
-        choices = []
-        for choice in results:
-            choices.append(choice)
+        #choices = []
+        #for choice in results:
+        #    choices.append(choice)
         
-        return retCode, choices
+        return retCode, results
         
     def open_file(self, title="Open File"):
         """
@@ -228,7 +228,6 @@ class Dialog:
         Usage: C{dialog.open_file(title="Open File")}
         
         @param title: window title for the dialog
-        @param initialDir: starting directory for the file dialog
         """
         #if rememberAs is not None:
         #    return self.__runZenity(title, ["--getopenfilename", initialDir, fileTypes, ":" + rememberAs])
@@ -270,6 +269,28 @@ class Dialog:
         @param title: window title for the dialog
         """
         #return self.__runZenity(title, ["--getcolor"])
+        
+    def calendar(self, title="Choose a date", format="%Y-%m-%d", date="today"):
+        """
+        Show a calendar dialog
+        
+        Usage: C{dialog.calendar_dialog(title="Choose a date", format="%Y-%m-%d", date="YYYY-MM-DD")}
+        
+        @param title: window title for the dialog
+        @param format: format of date to be returned
+        @param date: initial date as YYYY-MM-DD, otherwise today
+        
+        Use the dialog's OK button.
+        AutoKey has trouble if you double-click the date.
+        """
+        if re.match(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", date):
+            year = date[0:4]
+            month = date[5:7]
+            day = date[8:10]
+            date_args = ["--year=" + year, "--month=" + month, "--day=" + day]
+        else:
+            date_args = []
+        return self.__runZenity(title, ["--calendar", "--date-format=" + format] + date_args)
         
         
 class System:
