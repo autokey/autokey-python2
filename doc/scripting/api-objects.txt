@@ -19,6 +19,12 @@ lib.scripting.Dialog.__runZenity	lib.scripting.Dialog-class.html#__runZenity
 lib.scripting.Dialog.list_menu_multi	lib.scripting.Dialog-class.html#list_menu_multi
 lib.scripting.Dialog.calendar	lib.scripting.Dialog-class.html#calendar
 lib.scripting.Dialog.input_dialog	lib.scripting.Dialog-class.html#input_dialog
+lib.scripting.Engine	lib.scripting.Engine-class.html
+lib.scripting.Engine.create_hotkey	lib.scripting.Engine-class.html#create_hotkey
+lib.scripting.Engine.get_folder	lib.scripting.Engine-class.html#get_folder
+lib.scripting.Engine.create_abbreviation	lib.scripting.Engine-class.html#create_abbreviation
+lib.scripting.Engine.run_script	lib.scripting.Engine-class.html#run_script
+lib.scripting.Engine.__init__	lib.scripting.Engine-class.html#__init__
 lib.scripting.Keyboard	lib.scripting.Keyboard-class.html
 lib.scripting.Keyboard.send_keys	lib.scripting.Keyboard-class.html#send_keys
 lib.scripting.Keyboard.send_key	lib.scripting.Keyboard-class.html#send_key
@@ -37,6 +43,7 @@ lib.scripting.System.create_file	lib.scripting.System-class.html#create_file
 lib.scripting.Window	lib.scripting.Window-class.html
 lib.scripting.Window.wait_for_exist	lib.scripting.Window-class.html#wait_for_exist
 lib.scripting.Window.activate	lib.scripting.Window-class.html#activate
+lib.scripting.Window.get_active_geometry	lib.scripting.Window-class.html#get_active_geometry
 lib.scripting.Window.wait_for_focus	lib.scripting.Window-class.html#wait_for_focus
 lib.scripting.Window.__runWmctrl	lib.scripting.Window-class.html#__runWmctrl
 lib.scripting.Window.switch_desktop	lib.scripting.Window-class.html#switch_desktop

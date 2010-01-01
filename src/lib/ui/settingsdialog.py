@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import gtk, shutil, os
+import gtk, shutil, os, sys
 
 from autokey.configmanager import *
 from autokey import iomediator, interface, model
@@ -70,6 +70,13 @@ class SettingsDialog:
                                                     self.toggleMonitorDlg, self.clearMonitorButton)                                                    
         self.usePopupHotkey = self.__loadHotkey(configManager.showPopupHotkey, self.popupKeyLabel, 
                                                     self.showPopupDlg, self.clearPopupButton)
+                                                    
+        # Script Engine Settings
+        self.userModuleChooserButton = builder.get_object("userModuleChooserButton")
+        if configManager.userCodeDir is not None:
+            self.userModuleChooserButton.set_current_folder(configManager.userCodeDir)
+            if configManager.userCodeDir in sys.path:
+                sys.path.remove(configManager.userCodeDir)
         
         # Interface Settings
         self.xRecordButton = builder.get_object("xRecordButton")
@@ -98,6 +105,9 @@ class SettingsDialog:
         ConfigManager.SETTINGS[MENU_TAKES_FOCUS] = self.allowKbNavCheckbox.get_active()
         ConfigManager.SETTINGS[SORT_BY_USAGE_COUNT] = self.sortByUsageCheckbox.get_active()
         ConfigManager.SETTINGS[UNDO_USING_BACKSPACE] = self.enableUndoCheckbox.get_active()
+        
+        self.configManager.userCodeDir = self.userModuleChooserButton.get_current_folder()
+        sys.path.append(self.configManager.userCodeDir)
         
         if self.xRecordButton.get_active():
             ConfigManager.SETTINGS[INTERFACE_TYPE] = iomediator.X_RECORD_INTERFACE

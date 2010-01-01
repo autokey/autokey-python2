@@ -501,9 +501,9 @@ class ConfigWindow:
                    ("close-window", gtk.STOCK_CLOSE, "_Close window", None, "Close the configuration window", self.on_close),
                    ("quit", gtk.STOCK_QUIT, "_Quit", None, "Completely exit AutoKey", self.on_quit),
                    ("Edit", None, "_Edit"),
-                   #("cut-item", gtk.STOCK_CUT, "Cu_t Item", "", "Cut the selected item", self.on_cut_item),
-                   #("copy-item", gtk.STOCK_COPY, "_Copy Item", "", "Copy the selected item", self.on_copy_item),
-                   #("paste-item", gtk.STOCK_PASTE, "_Paste Item", "", "Paste the last cut/copied item", self.on_paste_item),
+                   ("cut-item", gtk.STOCK_CUT, "Cu_t Item", "", "Cut the selected item", self.on_cut_item),
+                   ("copy-item", gtk.STOCK_COPY, "_Copy Item", "", "Copy the selected item", self.on_copy_item),
+                   ("paste-item", gtk.STOCK_PASTE, "_Paste Item", "", "Paste the last cut/copied item", self.on_paste_item),
                    ("delete-item", gtk.STOCK_DELETE, "_Delete Item", "<control>d", "Delete the selected item", self.on_delete_item),
                    ("undo", gtk.STOCK_UNDO, "_Undo", "<control>z", "Undo the last edit", self.on_undo),
                    ("redo", gtk.STOCK_REDO, "_Redo", "<control><shift>z", "Redo the last undone edit", self.on_redo),
@@ -598,8 +598,8 @@ class ConfigWindow:
         self.uiManager.get_action("/MenuBar/File/save").set_sensitive(False)
         self.saveButton.set_sensitive(False)
         
-        #self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(not canCreate)
-        #self.uiManager.get_action("/MenuBar/Edit/paste-item").set_sensitive(canCreate and self.cutCopiedItem is not None)
+        self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(not canCreate)
+        self.uiManager.get_action("/MenuBar/Edit/paste-item").set_sensitive(canCreate and self.cutCopiedItem is not None)
         self.uiManager.get_action("/MenuBar/Edit/record").set_sensitive(isinstance(item, model.Script))
         self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(False)
         self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(False)
@@ -689,15 +689,19 @@ class ConfigWindow:
 
     # Edit Menu
 
-    """def on_cut_item(self, widget, data=None):
+    def on_cut_item(self, widget, data=None):
         self.cutCopiedItem = self.__getTreeSelection()
         selection = self.treeView.get_selection()
         model, item = selection.get_selected()
         self.__removeItem(model, item)
     
     def on_copy_item(self, widget, data=None):
-        self.cutCopiedItem = model.Phrase('', '')
-        self.cutCopiedItem.copy(self.__getTreeSelection())
+        source = self.__getTreeSelection()
+        if isinstance(source, model.Phrase):
+            self.cutCopiedItem = model.Phrase('', '')
+        else:
+            self.cutCopiedItem = model.Script('', '')
+        self.cutCopiedItem.copy(source)
     
     def on_paste_item(self, widget, data=None):
         theModel, parentIter = self.treeView.get_selection().get_selected()
@@ -707,7 +711,7 @@ class ConfigWindow:
         self.treeView.expand_to_path(theModel.get_path(newIter))
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)        
-        self.cutCopiedItem = None"""
+        self.cutCopiedItem = None
         
     def on_delete_item(self, widget, data=None):
         selection = self.treeView.get_selection()

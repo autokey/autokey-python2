@@ -14,9 +14,9 @@
 			<menuitem action="quit" />
 		</menu>
 		<menu action="Edit">
-<!--			<menuitem action="cut-item" />
+			<menuitem action="cut-item" />
 			<menuitem action="copy-item" />
-			<menuitem action="paste-item" />-->
+			<menuitem action="paste-item" />
 			<menuitem action="delete-item" />
 			<separator />
                         <menuitem action="undo" />
@@ -56,9 +56,9 @@
             <menuitem action="new-phrase" />
             <menuitem action="new-script" />
             <separator />
-<!--            <menuitem action="cut-item" />
+            <menuitem action="cut-item" />
             <menuitem action="copy-item" />
-            <menuitem action="paste-item" />-->
+            <menuitem action="paste-item" />
             <menuitem action="delete-item" />
         </popup>
 </ui>

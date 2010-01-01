@@ -35,7 +35,7 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 APP_NAME = "AutoKey"
 CATALOG = ""
 PROGRAM_NAME = _("AutoKey")
-VERSION = "0.61.1"
+VERSION = "0.61.2"
 DESCRIPTION = _("Desktop automation utility")
 #LICENSE = KAboutData.License_GPL_V3
 COPYRIGHT = _("(c) 2009 Chris Dekter")
@@ -78,6 +78,7 @@ class Application:
             # Create configuration directory
             if not os.path.exists(CONFIG_DIR):
                 os.makedirs(CONFIG_DIR)
+                
             # Initialise logger
             rootLogger = logging.getLogger()
             
@@ -137,6 +138,10 @@ class Application:
         self.service = service.Service(self)
         self.serviceDisabled = False
         
+        # Initialise user code dir
+        if self.configManager.userCodeDir is not None:
+            sys.path.append(self.configManager.userCodeDir)
+                
         try:
             self.service.start()
         except Exception, e:
