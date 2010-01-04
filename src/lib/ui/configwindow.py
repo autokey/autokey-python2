@@ -478,7 +478,7 @@ class ConfigWindow:
     
     def __init__(self, app):
         self.app = app
-        self.cutCopiedItem = None
+        self.cutCopiedItems = []
         
         builder = get_ui("mainwindow.xml")
         self.ui = builder.get_object("mainwindow")
@@ -501,10 +501,10 @@ class ConfigWindow:
                    ("close-window", gtk.STOCK_CLOSE, "_Close window", None, "Close the configuration window", self.on_close),
                    ("quit", gtk.STOCK_QUIT, "_Quit", None, "Completely exit AutoKey", self.on_quit),
                    ("Edit", None, "_Edit"),
-                   ("cut-item", gtk.STOCK_CUT, "Cu_t Item", "", "Cut the selected item", self.on_cut_item),
-                   ("copy-item", gtk.STOCK_COPY, "_Copy Item", "", "Copy the selected item", self.on_copy_item),
-                   ("paste-item", gtk.STOCK_PASTE, "_Paste Item", "", "Paste the last cut/copied item", self.on_paste_item),
-                   ("delete-item", gtk.STOCK_DELETE, "_Delete Item", "<control>d", "Delete the selected item", self.on_delete_item),
+                   ("cut-item", gtk.STOCK_CUT, "Cu_t Item(s)", "<control><shift>x", "Cut the selected item", self.on_cut_item),
+                   ("copy-item", gtk.STOCK_COPY, "_Copy Item(s)", "<control><shift>c", "Copy the selected item", self.on_copy_item),
+                   ("paste-item", gtk.STOCK_PASTE, "_Paste Item(s)", "<control><shift>v", "Paste the last cut/copied item", self.on_paste_item),
+                   ("delete-item", gtk.STOCK_DELETE, "_Delete Item(s)", "<control>d", "Delete the selected item", self.on_delete_item),
                    ("undo", gtk.STOCK_UNDO, "_Undo", "<control>z", "Undo the last edit", self.on_undo),
                    ("redo", gtk.STOCK_REDO, "_Redo", "<control><shift>z", "Redo the last undone edit", self.on_redo),
                    ("preferences", gtk.STOCK_PREFERENCES, "_Preferences", "", "Additional options", self.on_advanced_settings),
@@ -538,6 +538,9 @@ class ConfigWindow:
         menu = self.uiManager.get_widget('/MenuBar/File/create').get_submenu()
         create.set_menu(menu)
         toolbar = self.uiManager.get_widget('/Toolbar')
+        s = gtk.SeparatorToolItem()
+        s.show()
+        toolbar.insert(s, 0)
         toolbar.insert(create, 0)
         #if ConfigManager.SETTINGS[SHOW_TOOLBAR]:
         #    self.__addToolbar()
@@ -587,23 +590,29 @@ class ConfigWindow:
         self.saveButton.set_sensitive(dirty)
         self.revertButton.set_sensitive(dirty)
         
-    def update_actions(self, item):
-        canCreate = isinstance(item, model.Folder)
+    def update_actions(self, items, changed):
+        canCreate = isinstance(items[0], model.Folder) and len(items) == 1
+        canCopy = True
+        for item in items:
+            if isinstance(item, model.Folder):
+                canCopy = False
+                break
         
         self.uiManager.get_action("/MenuBar/File/create").set_sensitive(True)
         self.uiManager.get_action("/MenuBar/File/create/new-top-folder").set_sensitive(True)
         self.uiManager.get_action("/MenuBar/File/create/new-folder").set_sensitive(canCreate)
         self.uiManager.get_action("/MenuBar/File/create/new-phrase").set_sensitive(canCreate)
         self.uiManager.get_action("/MenuBar/File/create/new-script").set_sensitive(canCreate)
-        self.uiManager.get_action("/MenuBar/File/save").set_sensitive(False)
-        self.saveButton.set_sensitive(False)
         
-        self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(not canCreate)
-        self.uiManager.get_action("/MenuBar/Edit/paste-item").set_sensitive(canCreate and self.cutCopiedItem is not None)
-        self.uiManager.get_action("/MenuBar/Edit/record").set_sensitive(isinstance(item, model.Script))
-        self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(False)
-        self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(False)
-
+        self.uiManager.get_action("/MenuBar/Edit/copy-item").set_sensitive(canCopy)
+        self.uiManager.get_action("/MenuBar/Edit/paste-item").set_sensitive(canCreate and len(self.cutCopiedItems) > 0)
+        self.uiManager.get_action("/MenuBar/Edit/record").set_sensitive(isinstance(items[0], model.Script) and len(items) == 1)
+        
+        if changed:
+            self.uiManager.get_action("/MenuBar/File/save").set_sensitive(False)
+            self.saveButton.set_sensitive(False)
+            self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(False)
+            self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(False)
         
     def set_undo_available(self, state):
         self.uiManager.get_action("/MenuBar/Edit/undo").set_sensitive(state)
@@ -612,8 +621,9 @@ class ConfigWindow:
         self.uiManager.get_action("/MenuBar/Edit/redo").set_sensitive(state)
         
     def refresh_tree(self):
-        model, iter = self.treeView.get_selection().get_selected()
-        model.update_item(iter, self.__getTreeSelection())
+        model, selectedPaths = self.treeView.get_selection().get_selected_rows()
+        for path in selectedPaths:
+            model.update_item(model[path].iter, self.__getTreeSelection())
         
     # ---- Signal handlers ----
     
@@ -660,7 +670,8 @@ class ConfigWindow:
         self.__createFolder(None)
         
     def on_new_folder(self, widget, data=None):
-        model, parentIter = self.treeView.get_selection().get_selected()
+        theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
+        parentIter = theModel[selectedPaths[0]].iter
         self.__createFolder(parentIter)
         
     def __createFolder(self, parentIter):
@@ -668,70 +679,112 @@ class ConfigWindow:
         newFolder = model.Folder("New Folder")   
         newIter = theModel.append_item(newFolder, parentIter)
         self.treeView.expand_to_path(theModel.get_path(newIter))
+        self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
         
     def on_new_phrase(self, widget, data=None):
-        theModel, parentIter = self.treeView.get_selection().get_selected()
+        theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
+        parentIter = theModel[selectedPaths[0]].iter
         newPhrase = model.Phrase("New Phrase", "Enter phrase contents")
         newIter = theModel.append_item(newPhrase, parentIter)
         self.treeView.expand_to_path(theModel.get_path(newIter))
+        self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
     
     def on_new_script(self, widget, data=None):
-        theModel, parentIter = self.treeView.get_selection().get_selected()
+        theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
+        parentIter = theModel[selectedPaths[0]].iter
         newScript = model.Script("New Script", "# Enter script code")
         newIter = theModel.append_item(newScript, parentIter)
         self.treeView.expand_to_path(theModel.get_path(newIter))
+        self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
-
+        
     # Edit Menu
 
     def on_cut_item(self, widget, data=None):
-        self.cutCopiedItem = self.__getTreeSelection()
+        self.cutCopiedItems = self.__getTreeSelection()
         selection = self.treeView.get_selection()
-        model, item = selection.get_selected()
-        self.__removeItem(model, item)
+        model, selectedPaths = selection.get_selected_rows()
+        refs = []
+        for path in selectedPaths:
+            refs.append(gtk.TreeRowReference(model, path))
+            
+        for ref in refs:
+            if ref.valid():
+                self.__removeItem(model, model[ref.get_path()].iter)
+                
+        if len(selectedPaths) > 1:
+            self.treeView.get_selection().unselect_all()        
+            self.treeView.get_selection().select_iter(model.get_iter_root())
+            self.on_tree_selection_changed(self.treeView)        
     
     def on_copy_item(self, widget, data=None):
-        source = self.__getTreeSelection()
-        if isinstance(source, model.Phrase):
-            self.cutCopiedItem = model.Phrase('', '')
-        else:
-            self.cutCopiedItem = model.Script('', '')
-        self.cutCopiedItem.copy(source)
+        sourceObjects = self.__getTreeSelection()
+        
+        for source in sourceObjects:
+            if isinstance(source, model.Phrase):
+                newObj = model.Phrase('', '')
+            else:
+                newObj = model.Script('', '')
+            newObj.copy(source)
+            self.cutCopiedItems.append(newObj)
     
     def on_paste_item(self, widget, data=None):
-        theModel, parentIter = self.treeView.get_selection().get_selected()
-        newIter = theModel.append_item(self.cutCopiedItem, parentIter)
-        if isinstance(self.cutCopiedItem, model.Folder):
-            theModel.populate_store(newIter, self.cutCopiedItem)
-        self.treeView.expand_to_path(theModel.get_path(newIter))
-        self.treeView.get_selection().select_iter(newIter)
+        theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
+        parentIter = theModel[selectedPaths[0]].iter
+        
+        newIters = []
+        for item in self.cutCopiedItems:
+            newIter = theModel.append_item(item, parentIter)
+            if isinstance(item, model.Folder):
+                theModel.populate_store(newIter, item)
+            newIters.append(newIter)
+                
+        self.treeView.expand_to_path(theModel.get_path(newIters[-1]))
+        self.treeView.get_selection().unselect_all()
+        self.treeView.get_selection().select_iter(newIters[0])
+        self.cutCopiedItems = []
         self.on_tree_selection_changed(self.treeView)        
-        self.cutCopiedItem = None
+        for iter in newIters:
+            self.treeView.get_selection().select_iter(iter)        
         
     def on_delete_item(self, widget, data=None):
         selection = self.treeView.get_selection()
-        model, item = selection.get_selected()
-        
-        # Prompt for removal of a folder with phrases
-        if model.iter_n_children(item) > 0:
-            dlg = gtk.MessageDialog(self.ui, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
-                                    _("Are you sure you want to delete this folder and all the items in it?"))
-            if dlg.run() == gtk.RESPONSE_YES:
-                self.__removeItem(model, item)
-            dlg.destroy()
+        model, selectedPaths = selection.get_selected_rows()
+        refs = []
+        for path in selectedPaths:
+            refs.append(gtk.TreeRowReference(model, path))
             
-        else:
-            self.__removeItem(model, item)
-
+        for ref in refs:
+            if ref.valid():
+                # Prompt for removal of a folder with phrases
+                item = model[ref.get_path()].iter
+                    
+                if model.iter_n_children(item) > 0:
+                    title = model.get_value(item, AkTreeModel.OBJECT_COLUMN).title
+                    dlg = gtk.MessageDialog(self.ui, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO,
+                                            _("Are you sure you want to delete the %s folder and all the items in it?") % title)
+                    if dlg.run() == gtk.RESPONSE_YES:
+                        self.__removeItem(model, item)
+                    dlg.destroy()
+                    
+                else:
+                    self.__removeItem(model, item)
+        
+        if len(selectedPaths) > 1:
+            print "select to zero and reset"
+            self.treeView.get_selection().unselect_all()        
+            self.treeView.get_selection().select_iter(model.get_iter_root())
+            self.on_tree_selection_changed(self.treeView)        
+            
     def __removeItem(self, model, item):
         selection = self.treeView.get_selection()
-        model, iter = selection.get_selected()
-        newSelectionIter = model.iter_parent(iter)
+        model, selectedPaths = selection.get_selected_rows()
+        newSelectionIter = model.iter_parent(model[selectedPaths[0]].iter)
         if newSelectionIter is None:
             newSelectionIter = model.get_iter_root()
         
@@ -795,7 +848,6 @@ class ConfigWindow:
         webbrowser.open(HELP_URL, False, True)
         
     def on_donate(self, widget, data=None):
-        print "donate"
         webbrowser.open(DONATE_URL, False, True)
         
     def on_show_about(self, widget, data=None):
@@ -835,45 +887,61 @@ class ConfigWindow:
                 return False
         
     def on_tree_selection_changed(self, widget, data=None):
-        selectedObject = self.__getTreeSelection()
+        selectedObjects = self.__getTreeSelection()
+        if len(selectedObjects) == 1:
+            selectedObject = selectedObjects[0]
  
-        if isinstance(selectedObject, model.Folder):
-            self.stack.set_current_page(0)
-            self.folderPage.load(selectedObject)
-        elif isinstance(selectedObject, model.Phrase):
-            self.stack.set_current_page(1)
-            self.phrasePage.load(selectedObject)
-        else:
-            self.stack.set_current_page(2)
-            self.scriptPage.load(selectedObject)
+            if isinstance(selectedObject, model.Folder):
+                self.stack.set_current_page(0)
+                self.folderPage.load(selectedObject)
+            elif isinstance(selectedObject, model.Phrase):
+                self.stack.set_current_page(1)
+                self.phrasePage.load(selectedObject)
+            else:
+                self.stack.set_current_page(2)
+                self.scriptPage.load(selectedObject)
 
-        self.update_actions(selectedObject)
-        self.set_dirty(False)
-        self.cancel_record()
-        
+            self.set_dirty(False)
+            self.cancel_record()
+            self.update_actions(selectedObjects, True)            
+            self.selectedObject = selectedObject
+
+        else:
+            self.update_actions(selectedObjects, False)
+                
     def on_drag_data_get(self, treeview, context, selection, target_id, etime):
-        treeSelection = self.treeView.get_selection()
-        theModel, sourceIter = treeSelection.get_selected()
-        data = theModel.get_value(sourceIter, AkTreeModel.OBJECT_COLUMN)
+        #treeSelection = self.treeView.get_selection()
+        #theModel, sourceIter = treeSelection.get_selected()
+        #data = theModel.get_value(sourceIter, AkTreeModel.OBJECT_COLUMN)
         #selection.set(selection.target, 8, data)
+        pass
     
     def on_drag_data_received(self, treeview, context, x, y, selection, info, etime):
         selection = self.treeView.get_selection()
-        theModel, sourceIter = selection.get_selected()
+        theModel, sourcePaths = selection.get_selected_rows()
         drop_info = treeview.get_dest_row_at_pos(x, y)
         if drop_info:
             path, position = drop_info
             targetIter = theModel.get_iter(path)
             
-        sourceModelItem = theModel.get_value(sourceIter, AkTreeModel.OBJECT_COLUMN)
+        sourceModelItems = self.__getTreeSelection()
+        #sourceModelItem = theModel.get_value(sourceIter, AkTreeModel.OBJECT_COLUMN)
         targetModelItem = theModel.get_value(targetIter, AkTreeModel.OBJECT_COLUMN)
         
-        self.__removeItem(theModel, sourceIter)
-        newIter = theModel.append_item(sourceModelItem, targetIter)
-        if isinstance(sourceModelItem, model.Folder):
-            theModel.populate_store(newIter, sourceModelItem)
-        self.treeView.expand_to_path(theModel.get_path(newIter))
-        self.treeView.get_selection().select_iter(newIter)
+        for path in sourcePaths:
+            self.__removeItem(theModel, theModel[path].iter)
+        
+        newIters = []
+        for item in sourceModelItems:
+            newIter = theModel.append_item(item, targetIter)    
+            if isinstance(item, model.Folder):
+                theModel.populate_store(newIter, item)
+            newIters.append(newIter)
+                
+        self.treeView.expand_to_path(theModel.get_path(newIters[-1]))
+        selection.unselect_all()
+        for iter in newIters:
+            selection.select_iter(iter)
         self.on_tree_selection_changed(self.treeView)
         self.app.config_altered()
         
@@ -881,7 +949,7 @@ class ConfigWindow:
         drop_info = widget.get_dest_row_at_pos(x, y)
         if drop_info:
             selection = widget.get_selection()
-            theModel, sourceIter = selection.get_selected()
+            theModel, sourcePaths = selection.get_selected_rows()
             path, position = drop_info
             
             if position not in (gtk.TREE_VIEW_DROP_INTO_OR_BEFORE, gtk.TREE_VIEW_DROP_INTO_OR_AFTER):
@@ -889,7 +957,8 @@ class ConfigWindow:
             
             targetIter = theModel.get_iter(path)
             targetModelItem = theModel.get_value(targetIter, AkTreeModel.OBJECT_COLUMN)
-            if isinstance(targetModelItem, model.Folder):
+            if isinstance(targetModelItem, model.Folder) and path not in sourcePaths:
+                # checking path prevents dropping a folder onto itself
                 return False
             else:
                 return True
@@ -901,9 +970,11 @@ class ConfigWindow:
         self.treeView.set_model(AkTreeModel(self.app.configManager.folders))
         self.treeView.set_headers_visible(False)
         self.treeView.set_reorderable(False)
+        self.treeView.set_rubber_banding(True)
         targets = [('MY_TREE_MODEL_ROW', gtk.TARGET_SAME_WIDGET, 0)]
         self.treeView.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, targets, gtk.gdk.ACTION_DEFAULT|gtk.gdk.ACTION_MOVE)
         self.treeView.enable_model_drag_dest(targets, gtk.gdk.ACTION_DEFAULT)
+        self.treeView.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
         
         # Treeview columns
         column = gtk.TreeViewColumn("stuff")
@@ -925,9 +996,14 @@ class ConfigWindow:
     
     def __getTreeSelection(self):
         selection = self.treeView.get_selection()
-        model, item = selection.get_selected()
-        if item is not None:
-            return model.get_value(item, AkTreeModel.OBJECT_COLUMN)
+        model, items = selection.get_selected_rows()
+        if items:
+            ret = []
+            for item in items:
+                value = model.get_value(model[item].iter, AkTreeModel.OBJECT_COLUMN)
+                if value.parent not in ret: # Filter out any child objects that belong to a parent already in the list
+                    ret.append(value)
+            return ret
         else:
             return None
         
@@ -964,11 +1040,11 @@ class ConfigWindow:
         return result
             
     def __getCurrentPage(self):
-        selectedObject = self.__getTreeSelection()
+        #selectedObject = self.__getTreeSelection()
         
-        if isinstance(selectedObject, model.Folder):
+        if isinstance(self.selectedObject, model.Folder):
             return self.folderPage
-        elif isinstance(selectedObject, model.Phrase):
+        elif isinstance(self.selectedObject, model.Phrase):
             return self.phrasePage
         else:
             return self.scriptPage
@@ -1023,13 +1099,14 @@ class AkTreeModel(gtk.TreeStore):
             
         self.remove(iter)
         
-    def update_item(self, targetIter, item):
-        itemTuple = item.get_tuple()
-        updateList = []
-        for n in range(len(itemTuple)):
-            updateList.append(n)
-            updateList.append(itemTuple[n])
-        self.set(targetIter, *updateList)
+    def update_item(self, targetIter, items):
+        for item in items:
+            itemTuple = item.get_tuple()
+            updateList = []
+            for n in range(len(itemTuple)):
+                updateList.append(n)
+                updateList.append(itemTuple[n])
+            self.set(targetIter, *updateList)
         
     def compare(self, theModel, iter1, iter2):
         item1 = theModel.get_value(iter1, AkTreeModel.OBJECT_COLUMN)
