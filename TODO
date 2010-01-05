@@ -1,8 +1,8 @@
 Scripting framework ideas:
 Display API?
 
-Multiple selection in treeview
 Drag reorganise items in tree - option to show popup menu in dragged order?
+Enable tear-off state for popup menus?
 
 CouchDB backend (UbuntuOne)
 

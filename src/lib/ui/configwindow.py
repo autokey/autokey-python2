@@ -751,6 +751,7 @@ class ConfigWindow:
         self.on_tree_selection_changed(self.treeView)        
         for iter in newIters:
             self.treeView.get_selection().select_iter(iter)        
+        self.app.config_altered()
         
     def on_delete_item(self, widget, data=None):
         selection = self.treeView.get_selection()
