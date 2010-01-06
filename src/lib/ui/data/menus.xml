@@ -14,17 +14,19 @@
 			<menuitem action="quit" />
 		</menu>
 		<menu action="Edit">
+            <menuitem action="undo" />
+            <menuitem action="redo" />
+            <separator />
 			<menuitem action="cut-item" />
 			<menuitem action="copy-item" />
 			<menuitem action="paste-item" />
 			<menuitem action="delete-item" />
 			<separator />
-                        <menuitem action="undo" />
-                        <menuitem action="redo" />
-                        <separator />
-                        <menuitem action="record" />
-                        <separator />
-                        <menuitem action="preferences" />
+            <menuitem action="rename" />
+            <separator />
+            <menuitem action="record" />
+            <separator />
+            <menuitem action="preferences" />
 		</menu>
                 <menu action="View">
                     <menuitem action="toolbar" />
@@ -63,5 +65,7 @@
             <menuitem action="copy-item" />
             <menuitem action="paste-item" />
             <menuitem action="delete-item" />
+            <separator />
+            <menuitem action="rename" />
         </popup>
 </ui>

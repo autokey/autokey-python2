@@ -490,6 +490,7 @@ class ConfigWindow:
                    ("copy-item", gtk.STOCK_COPY, "_Copy Item(s)", "<control><shift>c", "Copy the selected item", self.on_copy_item),
                    ("paste-item", gtk.STOCK_PASTE, "_Paste Item(s)", "<control><shift>v", "Paste the last cut/copied item", self.on_paste_item),
                    ("delete-item", gtk.STOCK_DELETE, "_Delete Item(s)", "<control>d", "Delete the selected item", self.on_delete_item),
+                   ("rename", None, "_Rename", "", "Rename the selected item", self.on_rename),
                    ("undo", gtk.STOCK_UNDO, "_Undo", "<control>z", "Undo the last edit", self.on_undo),
                    ("redo", gtk.STOCK_REDO, "_Redo", "<control><shift>z", "Redo the last undone edit", self.on_redo),
                    ("preferences", gtk.STOCK_PREFERENCES, "_Preferences", "", "Additional options", self.on_advanced_settings),
@@ -667,6 +668,7 @@ class ConfigWindow:
         self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
+        self.on_rename(self.treeView)
         
     def on_new_phrase(self, widget, data=None):
         theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
@@ -677,6 +679,7 @@ class ConfigWindow:
         self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
+        self.on_rename(self.treeView)        
     
     def on_new_script(self, widget, data=None):
         theModel, selectedPaths = self.treeView.get_selection().get_selected_rows()
@@ -687,6 +690,7 @@ class ConfigWindow:
         self.treeView.get_selection().unselect_all()
         self.treeView.get_selection().select_iter(newIter)
         self.on_tree_selection_changed(self.treeView)
+        self.on_rename(self.treeView)        
         
     # Edit Menu
 
@@ -851,6 +855,11 @@ class ConfigWindow:
         dlg.destroy()
         
     # Tree widget
+    
+    def on_rename(self, widget, data=None):
+        selection = self.treeView.get_selection()
+        theModel, selectedPaths = selection.get_selected_rows()
+        self.treeView.set_cursor(selectedPaths[0], self.treeView.get_column(0), True)
     
     def on_treeWidget_row_activated(self, widget, path, viewColumn, data=None):
         widget.expand_row(path, False)
