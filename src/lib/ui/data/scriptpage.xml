@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Wed Sep 30 15:59:55 2009 -->
 <interface>
+  <!-- interface-requires gtk+ 2.6 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAlignment" id="scriptpage">
     <property name="visible">True</property>
     <property name="top_padding">5</property>
@@ -8,6 +9,7 @@
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">5</property>
         <child>
           <object class="GtkLabel" id="label1">
@@ -19,39 +21,29 @@
           </object>
           <packing>
             <property name="expand">False</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="descriptionEntry">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <signal handler="on_modified" name="changed"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolledWindow">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-            <property name="shadow_type">GTK_SHADOW_IN</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <property name="shadow_type">in</property>
             <child>
               <placeholder/>
             </child>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
           <object class="GtkFrame" id="frame1">
             <property name="visible">True</property>
             <property name="label_xalign">0</property>
-            <property name="shadow_type">GTK_SHADOW_NONE</property>
+            <property name="shadow_type">none</property>
             <child>
               <object class="GtkAlignment" id="alignment2">
                 <property name="visible">True</property>
@@ -61,22 +53,26 @@
                 <child>
                   <object class="GtkVBox" id="settingsVbox">
                     <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkCheckButton" id="promptCheckbox">
+                        <property name="label" translatable="yes">Always prompt before executing this script</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="label" translatable="yes">Always prompt before executing this script</property>
-                        <property name="response_id">0</property>
+                        <property name="receives_default">False</property>
                         <property name="draw_indicator">True</property>
                         <signal handler="on_modified" name="toggled"/>
                       </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="showInTrayCheckbox">
+                        <property name="label" translatable="yes">Show in tray menu	</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="label" translatable="yes">Show in tray menu	</property>
-                        <property name="response_id">0</property>
+                        <property name="receives_default">False</property>
                         <property name="draw_indicator">True</property>
                         <signal handler="on_modified" name="toggled"/>
                       </object>
@@ -107,7 +103,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

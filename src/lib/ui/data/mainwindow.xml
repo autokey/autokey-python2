@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<!--Generated with glade3 3.4.5 on Thu Oct  1 16:29:57 2009 -->
 <interface>
+  <!-- interface-requires gtk+ 2.6 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="mainwindow">
     <property name="title" translatable="yes">AutoKey - Configuration</property>
     <property name="default_width">600</property>
@@ -20,19 +21,19 @@
               <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                <property name="shadow_type">GTK_SHADOW_IN</property>
+                <property name="hscrollbar_policy">automatic</property>
+                <property name="vscrollbar_policy">automatic</property>
+                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkTreeView" id="treeWidget">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <signal handler="on_drag_data_get" name="drag_data_get"/>
-                    <signal handler="on_treeview_clicked" name="button_press_event"/>
+                    <signal handler="on_treeview_buttonpress" name="button_press_event"/>
                     <signal handler="on_treeWidget_row_activated" name="row_activated"/>
-                    <signal handler="on_tree_selection_changed" name="cursor_changed"/>
-                    <signal handler="on_drag_data_received" name="drag_data_received"/>
                     <signal handler="on_drag_drop" name="drag_drop"/>
+                    <signal handler="on_treeview_buttonrelease" name="button_release_event"/>
+                    <signal handler="on_drag_data_received" name="drag_data_received"/>
+                    <signal handler="on_tree_selection_changed" name="cursor_changed"/>
                   </object>
                 </child>
               </object>
@@ -57,33 +58,43 @@
                         <property name="show_tabs">False</property>
                         <property name="show_border">False</property>
                       </object>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                     <child>
                       <object class="GtkHButtonBox" id="hbuttonbox1">
                         <property name="visible">True</property>
                         <property name="spacing">5</property>
                         <property name="homogeneous">True</property>
-                        <property name="layout_style">GTK_BUTTONBOX_END</property>
+                        <property name="layout_style">end</property>
                         <child>
                           <object class="GtkButton" id="saveButton">
+                            <property name="label">gtk-save</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="label" translatable="yes">gtk-save</property>
                             <property name="use_stock">True</property>
                             <signal handler="on_save" name="clicked"/>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="revertButton">
+                            <property name="label">gtk-revert-to-saved</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="label" translatable="yes">gtk-revert-to-saved</property>
                             <property name="use_stock">True</property>
                             <signal handler="on_reset" name="clicked"/>
                           </object>
                           <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -103,7 +114,8 @@
             </child>
           </object>
           <packing>
-            <property name="pack_type">GTK_PACK_END</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </object>

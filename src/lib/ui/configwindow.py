@@ -198,7 +198,6 @@ class FolderPage:
         self.ui = builder.get_object("folderpage")
         builder.connect_signals(self)
         
-        self.titleEntry = builder.get_object("titleEntry")
         self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
         
         vbox = builder.get_object("settingsVbox")
@@ -207,24 +206,21 @@ class FolderPage:
         
     def load(self, theFolder):
         self.currentFolder = theFolder
-        self.titleEntry.set_text(theFolder.title.encode("utf-8"))
         self.showInTrayCheckbox.set_active(theFolder.showInTrayMenu)
         self.settingsWidget.load(theFolder)
-        self.titleEntry.grab_focus()
     
     def save(self):
-        self.currentFolder.title = self.titleEntry.get_text().decode("utf-8")
         self.currentFolder.showInTrayMenu = self.showInTrayCheckbox.get_active()
         self.settingsWidget.save()
+        
+    def set_item_title(self, newTitle):
+        self.currentFolder.title = newTitle.decode("utf-8")
+        #self.titleEntry.set_text(newTitle) # TODO testing remove me later
     
     def reset(self):
         self.load(self.currentFolder)
         
     def validate(self):
-        if not validate(not EMPTY_FIELD_REGEX.match(self.titleEntry.get_text()), _("The folder title can't be empty"),
-                         self.titleEntry, self.parentWindow.ui):
-            return False
-        
         return True
         
     def on_modified(self, widget, data=None):
@@ -305,7 +301,6 @@ class ScriptPage:
         self.ui = builder.get_object("scriptpage")
         builder.connect_signals(self)
         
-        self.descriptionEntry = builder.get_object("descriptionEntry")
         self.buffer = gtksourceview2.Buffer()
         self.buffer.connect("changed", self.on_modified)
         self.editor = gtksourceview2.View(self.buffer)
@@ -332,7 +327,6 @@ class ScriptPage:
 
     def load(self, theScript):
         self.currentItem = theScript
-        self.descriptionEntry.set_text(theScript.description.encode("utf-8"))
         
         self.buffer.begin_not_undoable_action()
         self.buffer.set_text(theScript.code.encode("utf-8"))
@@ -344,9 +338,6 @@ class ScriptPage:
         self.settingsWidget.load(theScript)
     
     def save(self):
-        self.currentItem.description = self.descriptionEntry.get_text().decode("utf-8")
-    
-        #buffer = self.phraseText.get_buffer()
         self.currentItem.code = self.buffer.get_text(self.buffer.get_start_iter(),
                                                         self.buffer.get_end_iter()).decode("utf-8")
     
@@ -354,6 +345,10 @@ class ScriptPage:
         self.currentItem.showInTrayMenu = self.showInTrayCheckbox.get_active()
         
         self.settingsWidget.save()
+        
+    def set_item_title(self, newTitle):
+        self.currentItem.description = newTitle.decode("utf-8")
+
     
     def reset(self):
         self.load(self.currentItem)
@@ -361,11 +356,6 @@ class ScriptPage:
         self.parentWindow.set_redo_available(False)
         
     def validate(self):
-        if not validate(not EMPTY_FIELD_REGEX.match(self.descriptionEntry.get_text()),
-                         _("The script description can't be empty"), self.descriptionEntry, self.parentWindow.ui):
-            return False
-        
-        #buffer = self.phraseText.get_buffer()
         text = self.buffer.get_text(self.buffer.get_start_iter(), self.buffer.get_end_iter())
         if not validate(not EMPTY_FIELD_REGEX.match(text), _("The script code can't be empty"), self.editor,
                          self.parentWindow.ui):
@@ -423,7 +413,6 @@ class PhrasePage(ScriptPage):
         self.ui = builder.get_object("phrasepage")
         builder.connect_signals(self)
         
-        self.descriptionEntry = builder.get_object("descriptionEntry")
         self.buffer = gtksourceview2.Buffer()
         self.buffer.connect("changed", self.on_modified)
         self.editor = gtksourceview2.View(self.buffer)
@@ -451,7 +440,6 @@ class PhrasePage(ScriptPage):
 
     def load(self, thePhrase):
         self.currentItem = thePhrase
-        self.descriptionEntry.set_text(thePhrase.description.encode("utf-8"))
         
         self.buffer.begin_not_undoable_action()
         self.buffer.set_text(thePhrase.phrase.encode("utf-8"))
@@ -463,9 +451,6 @@ class PhrasePage(ScriptPage):
         self.settingsWidget.load(thePhrase)
     
     def save(self):
-        self.currentItem.description = self.descriptionEntry.get_text().decode("utf-8")
-    
-        #buffer = self.phraseText.get_buffer()
         self.currentItem.phrase = self.buffer.get_text(self.buffer.get_start_iter(),
                                                         self.buffer.get_end_iter()).decode("utf-8")
     
@@ -870,22 +855,26 @@ class ConfigWindow:
     def on_treeWidget_row_activated(self, widget, path, viewColumn, data=None):
         widget.expand_row(path, False)
         
-    def on_treeview_clicked(self, widget, event, data=None):
+    def on_treeview_buttonpress(self, widget, event, data=None):
+        return self.dirty
+        
+    def on_treeview_buttonrelease(self, widget, event, data=None):          
         if self.promptToSave():
             # True result indicates user selected Cancel. Stop event propagation
             return True
         else:
-            if event.button == 3:
-                x = int(event.x)
-                y = int(event.y)
-                time = event.time
-                pthinfo = widget.get_path_at_pos(x, y)
-                if pthinfo is not None:
-                    path, col, cellx, celly = pthinfo
-                    widget.grab_focus()
+            x = int(event.x)
+            y = int(event.y)
+            time = event.time
+            pthinfo = widget.get_path_at_pos(x, y)
+            if pthinfo is not None:
+                path, col, cellx, celly = pthinfo
+                currentPath, currentCol = widget.get_cursor()
+                if currentPath != path and currentCol != col:
                     widget.set_cursor(path, col, 0)
+                if event.button == 3:
                     self.__popupMenu(event)
-                return False
+            return False
         
     def on_tree_selection_changed(self, widget, data=None):
         selectedObjects = self.__getTreeSelection()
@@ -910,13 +899,6 @@ class ConfigWindow:
         else:
             self.update_actions(selectedObjects, False)
                 
-    def on_drag_data_get(self, treeview, context, selection, target_id, etime):
-        #treeSelection = self.treeView.get_selection()
-        #theModel, sourceIter = treeSelection.get_selected()
-        #data = theModel.get_value(sourceIter, AkTreeModel.OBJECT_COLUMN)
-        #selection.set(selection.target, 8, data)
-        pass
-    
     def on_drag_data_received(self, treeview, context, x, y, selection, info, etime):
         selection = self.treeView.get_selection()
         theModel, sourcePaths = selection.get_selected_rows()
@@ -966,7 +948,15 @@ class ConfigWindow:
         
         return True
         
-        
+    def on_cell_modified(self, renderer, path, newText, data=None):
+        if validate(not EMPTY_FIELD_REGEX.match(newText), _("The name can't be empty"),
+                         None, self.ui):
+            self.__getCurrentPage().set_item_title(newText)
+            self.refresh_tree()
+            self.app.config_altered()
+        else:
+            self.on_edit_cell(self.treeView)
+            
     def __initTreeWidget(self):
         self.treeView.set_model(AkTreeModel(self.app.configManager.folders))
         self.treeView.set_headers_visible(False)
@@ -981,6 +971,8 @@ class ConfigWindow:
         column = gtk.TreeViewColumn("stuff")
         iconRenderer = gtk.CellRendererPixbuf()
         textRenderer = gtk.CellRendererText()
+        textRenderer.set_property("editable", True)
+        textRenderer.connect("edited", self.on_cell_modified)
         column.pack_start(iconRenderer, False)
         column.pack_end(textRenderer, True)
         column.add_attribute(iconRenderer, "icon-name", 0)
