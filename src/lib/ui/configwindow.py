@@ -709,7 +709,9 @@ class ConfigWindow:
         if len(selectedPaths) > 1:
             self.treeView.get_selection().unselect_all()        
             self.treeView.get_selection().select_iter(model.get_iter_root())
-            self.on_tree_selection_changed(self.treeView)        
+            self.on_tree_selection_changed(self.treeView)
+            
+        self.app.config_altered()    
     
     def on_copy_item(self, widget, data=None):
         sourceObjects = self.__getTreeSelection()
@@ -766,10 +768,11 @@ class ConfigWindow:
                     self.__removeItem(model, item)
         
         if len(selectedPaths) > 1:
-            print "select to zero and reset"
             self.treeView.get_selection().unselect_all()        
             self.treeView.get_selection().select_iter(model.get_iter_root())
             self.on_tree_selection_changed(self.treeView)        
+            
+        self.app.config_altered()
             
     def __removeItem(self, model, item):
         selection = self.treeView.get_selection()
@@ -779,7 +782,6 @@ class ConfigWindow:
             newSelectionIter = model.get_iter_root()
         
         model.remove_item(item)
-        self.app.config_altered()
         self.treeView.get_selection().select_iter(newSelectionIter)
         self.on_tree_selection_changed(self.treeView)
         
