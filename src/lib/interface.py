@@ -35,7 +35,11 @@ except ImportError:
     
 from Xlib.protocol import rq, event
 
-from PyQt4.QtGui import QClipboard, QApplication
+global USING_QT
+if USING_QT:
+    from PyQt4.QtGui import QClipboard, QApplication
+else:
+    import gtk
 
 logger = logging.getLogger("interface")
 
@@ -129,7 +133,12 @@ class XInterfaceBase(threading.Thread):
         self.lock = threading.RLock()
         self.dpyLock = threading.Lock()
         self.lastChars = [] # TODO QT4 Workaround - remove me once the bug is fixed
-        self.clipBoard = QApplication.clipboard()
+        
+        if USING_QT:
+            self.clipBoard = QApplication.clipboard()
+        else:
+            self.clipBoard = gtk.Clipboard()
+            self.selection = gtk.Clipboard(selection="PRIMARY")
         
         self.__initMappings()
         
@@ -230,9 +239,13 @@ class XInterfaceBase(threading.Thread):
                 
     def send_string_clipboard(self, string):
         logger.debug("Sending string: %r", string)
-        self.sem = threading.Semaphore(0)
-        self.app.exec_in_main(self.__fillSelection, string)
-        self.sem.acquire()
+        
+        if USING_QT:
+            self.sem = threading.Semaphore(0)
+            self.app.exec_in_main(self.__fillSelection, string)
+            self.sem.acquire()
+        else:
+            self.__fillSelection(string)
         
         focus = self.localDisplay.get_input_focus().focus
         xtest.fake_input(focus, X.ButtonPress, X.Button2)
@@ -240,8 +253,11 @@ class XInterfaceBase(threading.Thread):
         logger.debug("Send via clipboard done")
         
     def __fillSelection(self, string):
-        self.clipBoard.setText(string, QClipboard.Selection)
-        self.sem.release()
+        if USING_QT:
+            self.clipBoard.setText(string, QClipboard.Selection)
+            self.sem.release()
+        else:
+            self.selection.set_text(string.encode("utf-8"))            
     
     def send_string(self, string):
         """
@@ -498,38 +514,36 @@ class EvDevInterface(XInterfaceBase):
                 logger.info("EvDev interface thread terminated")
                 break
             
-            # Request next event
             try:
-                data = self.socket.recv(PACKET_SIZE)
-            except socket.timeout:
-                continue # Timeout means no data to received
-            except:
-                logger.exception("Connection to EvDev daemon lost")
-                self.__connLost()
-                continue
-                
-            
-            data = data.strip()
-            try:
-                keyCode, button, state = data.split(',')
-            except:
-                logger.exception("Connection to EvDev daemon lost")
-                self.__connLost()
-                continue
-            
-            if keyCode:
-                keyCode = int(keyCode)
-                if state == '2':
-                    self._handleKeyRelease(keyCode)
-                    self._handleKeyPress(keyCode)
-                elif state == '1':
-                    self._handleKeyPress(keyCode)
-                elif state == '0':
-                    self._handleKeyRelease(keyCode)
+                # Request next event
+                try:
+                    data = self.socket.recv(PACKET_SIZE)
+                except socket.timeout:
+                    continue # Timeout means no data to received
                     
-            if button:
-                ret = self.localDisplay.get_input_focus().focus.query_pointer()
-                self.mediator.handle_mouse_click(ret.root_x, ret.root_y, ret.win_x, ret.win_y, button)
+                
+                data = data.strip()
+                keyCode, button, state = data.split(',')
+
+                
+                if keyCode:
+                    keyCode = int(keyCode)
+                    if state == '2':
+                        self._handleKeyRelease(keyCode)
+                        self._handleKeyPress(keyCode)
+                    elif state == '1':
+                        self._handleKeyPress(keyCode)
+                    elif state == '0':
+                        self._handleKeyRelease(keyCode)
+                        
+                if button:
+                    ret = self.localDisplay.get_input_focus().focus.query_pointer()
+                    self.mediator.handle_mouse_click(ret.root_x, ret.root_y, ret.win_x, ret.win_y, button)
+                
+            except:
+                logger.exception("Connection to EvDev daemon lost")
+                self.__connLost()
+                continue
                 
                 
     def __connect(self):
