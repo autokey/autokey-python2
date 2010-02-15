@@ -38,6 +38,6 @@ interface offering the full flexibility and power of the Python language.""",
                     "autokey.gtkui" : ["data/gui.xml", "data/api.txt"]},
       data_files=[("/usr/share/pixmaps", ["config/akicon.png"]),
                   ("/usr/share/applications", ["config/autokey.desktop"])],
-      scripts=['autokey']
+      scripts=['autokey-qt', 'autokey-gtk']
       #packages=["plugin"]
       )
