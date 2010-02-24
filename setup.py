@@ -37,7 +37,8 @@ interface offering the full flexibility and power of the Python language.""",
       package_data={"autokey.qtui" : ["data/gui.xml", "data/api.txt"],
                     "autokey.gtkui" : ["data/gui.xml", "data/api.txt"]},
       data_files=[("/usr/share/pixmaps", ["config/akicon.png"]),
-                  ("/usr/share/applications", ["config/autokey.desktop"])],
+                  ("/usr/share/applications", ["config/autokey-qt.desktop", "config/autokey-gtk.desktop"]),
+                  ('share/man/man1/', ['doc/man/autokey-qt.1', 'doc/man/autokey-gtk.1'])],
       scripts=['autokey-qt', 'autokey-gtk']
       #packages=["plugin"]
       )
