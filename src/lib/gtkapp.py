@@ -17,14 +17,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-global USING_QT
-USING_QT = False
+import common
+common.USING_QT = False
 
 import sys, traceback, os.path, signal, logging, logging.handlers, subprocess, Queue, optparse
 import gettext, gtk
 gettext.install("autokey")
 
-import service, ui.notifier, ui.popupmenu, ui.configwindow, ui.abbrselector
+import service
+from gtkui.notifier import Notifier
+from gtkui.popupmenu import PopupMenu
+from gtkui.configwindow import ConfigWindow
+from gtkui.abbrselector import AbbrSelectorDialog
 from configmanager import *
 from common import *
 
@@ -42,21 +46,6 @@ class Application:
     """
     
     def __init__(self):
-        
-        """aboutData = KAboutData(APP_NAME, CATALOG, PROGRAM_NAME, VERSION, DESCRIPTION,
-                                    LICENSE, COPYRIGHT, TEXT, HOMEPAGE, BUG_EMAIL)
-
-        aboutData.addAuthor(_("Chris Dekter"), _("Developer"), "cdekter@gmail.com", "")
-        aboutData.addAuthor(_("Sam Peterson"), _("Original developer"), "peabodyenator@gmail.com", "")
-        aboutData.setProgramIconName(ui.notifier.ICON_FILE)
-        
-        KCmdLineArgs.init(sys.argv, aboutData)
-        options = KCmdLineOptions()
-        options.add("l").add("verbose", _("Enable verbose logging"))
-        options.add("c").add("configure", _("Show the configuration window on startup"))
-        KCmdLineArgs.addCmdLineOptions(options)
-        args = KCmdLineArgs.parsedArgs()"""
-        
         gtk.gdk.threads_init()
         
         p = optparse.OptionParser()
@@ -140,7 +129,7 @@ class Application:
             self.show_error_dialog(_("Error starting interface. Keyboard monitoring will be disabled.\n" +
                                     "Check your system/configuration."), str(e))
         
-        self.notifier = ui.notifier.Notifier(self)
+        self.notifier = Notifier(self)
         self.configWindow = None
         self.abbrPopup = None
         
@@ -211,7 +200,7 @@ class Application:
         """
         logging.info("Displaying configuration window")
         if self.configWindow is None:
-            self.configWindow = ui.configwindow.ConfigWindow(self)
+            self.configWindow = ConfigWindow(self)
             self.configWindow.show()
         else:    
             self.configWindow.deiconify()
@@ -227,7 +216,7 @@ class Application:
         """
         if self.abbrPopup is None:
             logging.info("Displaying abbreviation popup")
-            self.abbrPopup = ui.abbrselector.AbbrSelectorDialog(self)
+            self.abbrPopup = AbbrSelectorDialog(self)
             self.abbrPopup.present()
             
     def show_abbr_async(self):
@@ -266,7 +255,7 @@ class Application:
         dlg.destroy()        
         
     def show_popup_menu(self, folders=[], items=[], onDesktop=True, title=None):
-        self.menu = ui.popupmenu.PopupMenu(self.service, folders, items, onDesktop, title)
+        self.menu = PopupMenu(self.service, folders, items, onDesktop, title)
         self.menu.show_on_desktop()
     
     def hide_menu(self):

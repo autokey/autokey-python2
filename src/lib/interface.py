@@ -35,17 +35,13 @@ except ImportError:
     
 from Xlib.protocol import rq, event
 
-global USING_QT
-if USING_QT:
+import common
+if common.USING_QT:
     from PyQt4.QtGui import QClipboard, QApplication
 else:
     import gtk
 
 logger = logging.getLogger("interface")
-
-# Misc
-DOMAIN_SOCKET_PATH = "/tmp/autokey.daemon"
-PACKET_SIZE = 32
 
 # Modifiers
 SHIFT = 'XK_Shift_L'
@@ -134,7 +130,7 @@ class XInterfaceBase(threading.Thread):
         self.dpyLock = threading.Lock()
         self.lastChars = [] # TODO QT4 Workaround - remove me once the bug is fixed
         
-        if USING_QT:
+        if common.USING_QT:
             self.clipBoard = QApplication.clipboard()
         else:
             self.clipBoard = gtk.Clipboard()
@@ -240,7 +236,7 @@ class XInterfaceBase(threading.Thread):
     def send_string_clipboard(self, string):
         logger.debug("Sending string: %r", string)
         
-        if USING_QT:
+        if common.USING_QT:
             self.sem = threading.Semaphore(0)
             self.app.exec_in_main(self.__fillSelection, string)
             self.sem.acquire()
@@ -253,7 +249,7 @@ class XInterfaceBase(threading.Thread):
         logger.debug("Send via clipboard done")
         
     def __fillSelection(self, string):
-        if USING_QT:
+        if common.USING_QT:
             self.clipBoard.setText(string, QClipboard.Selection)
             self.sem.release()
         else:
@@ -517,7 +513,7 @@ class EvDevInterface(XInterfaceBase):
             try:
                 # Request next event
                 try:
-                    data = self.socket.recv(PACKET_SIZE)
+                    data = self.socket.recv(common.PACKET_SIZE)
                 except socket.timeout:
                     continue # Timeout means no data to received
                     
@@ -553,7 +549,7 @@ class EvDevInterface(XInterfaceBase):
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.settimeout(1)
         try:
-            self.socket.connect(DOMAIN_SOCKET_PATH)
+            self.socket.connect(common.DOMAIN_SOCKET_PATH)
             logger.info("EvDev daemon connected")
             self.connected = True
         except socket.error, e:

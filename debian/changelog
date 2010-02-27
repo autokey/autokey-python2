@@ -1,9 +1,24 @@
-autokey (0.61.3-0~karmic) UNRELEASED; urgency=low
+autokey (0.61.4-0~karmic) UNRELEASED; urgency=low
 
-  * Handle invalid or empty pidfiles in src/daemon.py. 
-  * Lower build-depends requirements to minimum Python versions. 
+  [Chris Dekter]
+  * Combine GTK and QT versions into single source tree
 
- -- Luke Faraone <luke@faraone.cc>  Wed, 03 Feb 2010 08:49:52 -0500
+  [Luke Faraone]
+  * Update package build to build autokey-gtk, autokey-qt and
+    autokey-common packages
+
+ -- Chris Dekter <cdekter@gmail.com>  Sun, 28 Feb 2010 08:49:52 +1000
+
+autokey (0.61.3-0~karmic) karmic; urgency=low
+
+  [ Luke Faraone ]
+  * Handle invalid or empty pidfiles in src/daemon.py.
+  * Lower build-depends requirements to minimum Python versions.
+
+  [ Chris Dekter ]
+  * Add --error-handler to debian/rules
+
+ -- Chris Dekter <cdekter@gmail.com>  Sat, 27 Feb 2010 08:49:52 +1000
 
 autokey (0.61.2-0~karmic) karmic; urgency=low
 

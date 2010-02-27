@@ -19,11 +19,11 @@
 import pynotify, gobject, gtk
 import popupmenu, abbrselector
 from autokey.configmanager import *
+from autokey import common
 
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-ICON_FILE = "/usr/share/pixmaps/akicon.png"
 STATUS_ICON_FILE = "/usr/share/pixmaps/akicon-status.png"
 
 def gthreaded(f):

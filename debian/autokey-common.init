@@ -13,7 +13,7 @@
 
 import sys, os, socket, glob, shutil, time
 from autokey import evdev, daemon
-from autokey.interface import DOMAIN_SOCKET_PATH, PACKET_SIZE
+from autokey.common import DOMAIN_SOCKET_PATH, PACKET_SIZE
 
 PACKET_STRING = "%s,%s,%s"
 

@@ -9,5 +9,5 @@ usr/lib/python*/*-packages/autokey/model.py
 usr/lib/python*/*-packages/autokey/nogui.py
 usr/lib/python*/*-packages/autokey/scripting.py
 usr/lib/python*/*-packages/autokey/service.py
-usr/lib/python*/*-packages/autokey-0.61.2.egg-info
+usr/lib/python*/*-packages/autokey-*.egg-info
 usr/share/pixmaps/akicon.png

@@ -23,15 +23,11 @@ from dialogs import *
 from settingsdialog import SettingsDialog
 from autokey.configmanager import *
 from autokey.iomediator import Recorder
-from autokey import model
-import autokey.autokey
+from autokey import model, common
 
-CONFIG_WINDOW_TITLE = _("Configuration")
-ICON_FILE = "/usr/share/pixmaps/akicon.png"
+CONFIG_WINDOW_TITLE = _(common.CONFIG_WINDOW_TITLE + " - AutoKey")
 
-FAQ_URL = "http://code.google.com/p/autokey/wiki/FAQ"
-HELP_URL = "http://code.google.com/p/autokey/w/list"
-DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
+
 WEBSITE = "http://code.google.com/p/autokey"
 
 UI_DESCRIPTION_FILE = os.path.join(os.path.dirname(__file__), "data/menus.xml")
@@ -834,20 +830,20 @@ class ConfigWindow:
     # Help Menu
             
     def on_show_faq(self, widget, data=None):
-        webbrowser.open(FAQ_URL, False, True)
+        webbrowser.open(common.FAQ_URL, False, True)
         
     def on_show_help(self, widget, data=None):
-        webbrowser.open(HELP_URL, False, True)
+        webbrowser.open(common.HELP_URL, False, True)
         
     def on_donate(self, widget, data=None):
-        webbrowser.open(DONATE_URL, False, True)
+        webbrowser.open(common.DONATE_URL, False, True)
         
     def on_show_about(self, widget, data=None):
         dlg = gtk.AboutDialog()
         dlg.set_name("AutoKey (GTK UI)")
         dlg.set_comments("A desktop automation utility for Linux and X11.")
-        dlg.set_version(autokey.autokey.VERSION)
-        p = gtk.gdk.pixbuf_new_from_file(ICON_FILE)
+        dlg.set_version(common.VERSION)
+        p = gtk.gdk.pixbuf_new_from_file(common.ICON_FILE)
         p = p.scale_simple(100, 100, gtk.gdk.INTERP_BILINEAR)
         dlg.set_logo(p)
         dlg.set_website(WEBSITE)

@@ -12,8 +12,8 @@ Package: autokey
 Architecture: all
 Depends: ${misc:Depends}, autokey-qt, autokey-common
 Section: metapackages
-Description: dummy transitional pacakge for autokey-qt 
- This transitional package helps users transition to the autokey package. Once
+Description: dummy transitional package for autokey-qt
+ This transitional package helps users transition to the autokey-qt package. Once
  this package and its dependencies are installed you can safely remove it.
 
 Package: autokey-common

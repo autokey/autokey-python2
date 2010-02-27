@@ -18,8 +18,8 @@
 
 import subprocess, threading, time, re
 
-global USING_QT
-if USING_QT:
+import common
+if common.USING_QT:
     from PyQt4.QtGui import QClipboard, QApplication
 else:
     import gtk

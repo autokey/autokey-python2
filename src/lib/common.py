@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-
+import os.path
 CONFIG_DIR = os.path.expanduser("~/.config/autokey")
 LOCK_FILE = CONFIG_DIR + "/autokey.pid"
 LOG_FILE = CONFIG_DIR + "/autokey.log"
@@ -27,7 +27,22 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 
 APP_NAME = "AutoKey"
 CATALOG = ""
-VERSION = "0.61.2"
+VERSION = "0.61.4"
 HOMEPAGE  = "http://autokey.sourceforge.net/"
 BUG_EMAIL = "cdekter@gmail.com"
+
+FAQ_URL = "http://code.google.com/p/autokey/wiki/FAQ"
+HELP_URL = "http://code.google.com/p/autokey/w/list"
+DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=216191"
+
+CONFIG_WINDOW_TITLE = "Configuration"
+
+ICON_FILE = "/usr/share/pixmaps/akicon.png"
+
+USING_QT = True
+
+# Misc
+DOMAIN_SOCKET_PATH = "/tmp/autokey.daemon"
+PACKET_SIZE = 32
+
 
