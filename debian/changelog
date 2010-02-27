@@ -1,3 +1,14 @@
+autokey-gtk (0.61.3-0~karmic) karmic; urgency=low
+
+  [ Luke Faraone ]
+  * Handle invalid or empty pidfiles in src/daemon.py.
+  * Lower build-depends requirements to minimum Python versions.
+
+  [ Chris Dekter ]
+  * Add --error-handler to debian/rules
+
+ -- Chris Dekter <cdekter@gmail.com>  Sat, 27 Feb 2010 08:49:52 +1000
+
 autokey-gtk (0.61.2-0~karmic) karmic; urgency=low
 
   * Bring back cut/copy/paste item menu options
