@@ -11,6 +11,7 @@ Homepage: http://autokey.googlecode.com/
 Package: autokey
 Architecture: all
 Depends: ${misc:Depends}, autokey-qt, autokey-common
+Breaks: autokey (<<0.61.4-0~0)
 Section: metapackages
 Description: dummy transitional package for autokey-qt
  This transitional package helps users transition to the autokey-qt package. Once
@@ -19,6 +20,8 @@ Description: dummy transitional package for autokey-qt
 Package: autokey-common
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-xlib, wmctrl
+Replaces: autokey (<<0.61.4-0~0)
+Breaks: autokey (<<0.61.4-0~0)
 XB-Python-Version: ${python:Versions}
 Section: utils
 Description: desktop automation utility - common data
@@ -34,7 +37,8 @@ Package: autokey-qt
 Section: kde
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-kde4, python-qt4, python-qscintilla2, python-xlib, wmctrl, autokey-common
-Replaces: autokey
+Replaces: autokey (<<0.61.4-0~0)
+Breaks: autokey (<<0.61.4-0~0)
 XB-Python-Version: ${python:Versions}
 Description: desktop automation utility - QT version
  AutoKey is a desktop automation utility for Linux and X11. It allows the 
@@ -49,6 +53,8 @@ Package: autokey-gtk
 Section: gnome
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-gtk2, python-gtksourceview2, python-glade2, python-xlib, python-notify, wmctrl, autokey-common
+Replaces: autokey (<<0.61.4-0~0)
+Breaks: autokey (<<0.61.4-0~0)
 XB-Python-Version: ${python:Versions}
 Description: desktop automation utility - GTK+ version
  AutoKey is a desktop automation utility for Linux and X11. It allows the
