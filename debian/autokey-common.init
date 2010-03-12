@@ -12,8 +12,13 @@
 ### END INIT INFO
 
 import sys, os, socket, glob, shutil, time
-from autokey import evdev, daemon
-from autokey.common import DOMAIN_SOCKET_PATH, PACKET_SIZE
+try:
+    from autokey import evdev, daemon
+    from autokey.common import DOMAIN_SOCKET_PATH, PACKET_SIZE
+except ImportError:
+    # Per DPM § 9.3.2 script should fail gracefully if not installed.
+    print "It does not seem Autokey is installed. Exiting..."
+    sys.exit(0)
 
 PACKET_STRING = "%s,%s,%s"
 
