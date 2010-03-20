@@ -1,4 +1,14 @@
-autokey (0.61.4-0~karmic) UNRELEASED; urgency=low
+autokey (0.61.5-0~karmic) karmic; urgency=high
+
+  * SECURITY UPDATE: arbitrary file overwriting via symlinks (LP: #538471)
+    - Store files for the EvDev daemon in FHS-specified locations
+    - debian/autokey-common.init: Set pidfile path to "/var/run/autokey-daemon.pid"
+    - src/lib/common.py: Set DOMAIN_SOCKET_PATH to "/var/run/autokey-daemon"
+    - CVE-2010-0398
+    
+ -- Chris Dekter <cdekter@gmail.com>  Sat, 20 Mar 2010 21:30:52 +1000
+
+autokey (0.61.4-0~karmic) karmic; urgency=low
 
   [Chris Dekter]
   * Combine GTK and QT versions into single source tree

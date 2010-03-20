@@ -19,7 +19,7 @@
 import os, os.path, shutil, logging, pickle
 import iomediator, interface
 
-APP_VERSION = "0.61.4"
+APP_VERSION = "0.61.5"
 
 _logger = logging.getLogger("config-manager")
 

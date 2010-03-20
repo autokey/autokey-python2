@@ -27,7 +27,7 @@ LOG_FORMAT = "%(levelname)s - %(name)s - %(message)s"
 
 APP_NAME = "AutoKey"
 CATALOG = ""
-VERSION = "0.61.4"
+VERSION = "0.61.5"
 HOMEPAGE  = "http://autokey.sourceforge.net/"
 BUG_EMAIL = "cdekter@gmail.com"
 
@@ -42,7 +42,7 @@ ICON_FILE = "/usr/share/pixmaps/akicon.png"
 USING_QT = True
 
 # Misc
-DOMAIN_SOCKET_PATH = "/tmp/autokey.daemon"
+DOMAIN_SOCKET_PATH = "/var/run/autokey-daemon"
 PACKET_SIZE = 32
 
 
