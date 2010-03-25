@@ -23,8 +23,8 @@ from autokey import iomediator, interface, model
 from dialogs import GlobalHotkeyDialog
 import configwindow
 
-DESKTOP_FILE = "/usr/share/applications/autokey.desktop"
-AUTOSTART_FILE = os.path.expanduser("~/.config/autostart/autokey.desktop")
+DESKTOP_FILE = "/usr/share/applications/autokey-gtk.desktop"
+AUTOSTART_FILE = os.path.expanduser("~/.config/autostart/autokey-gtk.desktop")
 
 class SettingsDialog:
     

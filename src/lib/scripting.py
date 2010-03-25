@@ -291,22 +291,30 @@ class System:
     Simplified access to some system commands.
     """    
     
-    def exec_command(self, command):
+    def exec_command(self, command, getOutput=True):
         """
         Execute a shell command
+
+        Set getOutput to False if the command does not exit and return immediately. Otherwise
+        AutoKey will not respond to any hotkeys/abbreviations etc until the process started
+        by the command exits.
         
-        Usage: C{system.exec_command(command)}
+        Usage: C{system.exec_command(command, getOutput=True)}
         
         @param command: command to be executed (including any arguments) - e.g. "ls -l"
+        @param getOutput: whether to capture the (stdout) output of the command
         @raises subprocess.CalledProcessError: if the command returns a non-zero exit code
         """
-        p = subprocess.Popen(command, shell=True, bufsize=-1, stdout=subprocess.PIPE)
-        retCode = p.wait()
-        output = p.stdout.read()[:-1]
-        if retCode != 0:
-            raise subprocess.CalledProcessError(retCode, output)
+        if getOutput:
+            p = subprocess.Popen(command, shell=True, bufsize=-1, stdout=subprocess.PIPE)
+            retCode = p.wait()
+            output = p.stdout.read()[:-1]
+            if retCode != 0:
+                raise subprocess.CalledProcessError(retCode, output)
+            else:
+                return output
         else:
-            return output
+            subprocess.Popen(command, shell=True, bufsize=-1)
     
     def create_file(self, fileName, contents=""):
         """

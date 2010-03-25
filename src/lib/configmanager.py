@@ -19,7 +19,7 @@
 import os, os.path, shutil, logging, pickle
 import iomediator, interface
 
-APP_VERSION = "0.61.5"
+APP_VERSION = "0.61.6"
 
 _logger = logging.getLogger("config-manager")
 
@@ -479,7 +479,7 @@ engine.create_phrase(folder, title, contents)"""
         for item in self.globalHotkeys:
             if item.enabled:
                 if item.modifiers == modifiers and item.hotKey == hotKey:
-                    return False
+                    return item is targetPhrase
 
         return True
     

@@ -190,6 +190,7 @@ class HotkeySettingsDialog(DialogBase):
         
     def load(self, item):
         self.targetItem = item
+        self.setButton.set_sensitive(True)
         if model.TriggerMode.HOTKEY in item.modes:
             self.controlButton.set_active(iomediator.Key.CONTROL in item.modifiers)
             self.altButton.set_active(iomediator.Key.ALT in item.modifiers)
@@ -229,6 +230,7 @@ class HotkeySettingsDialog(DialogBase):
 
         self._setKeyLabel(_("(None)"))
         self.key = None
+        self.setButton.set_sensitive(True)
             
     def set_key(self, key):
         if self.KEY_MAP.has_key(key):

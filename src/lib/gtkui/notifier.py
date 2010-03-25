@@ -24,7 +24,7 @@ from autokey import common
 TOOLTIP_RUNNING = "AutoKey - running"
 TOOLTIP_PAUSED = "AutoKey - paused"
 
-STATUS_ICON_FILE = "/usr/share/pixmaps/akicon-status.png"
+STATUS_ICON_FILE = "/usr/share/pixmaps/akicon.png"
 
 def gthreaded(f):
     
