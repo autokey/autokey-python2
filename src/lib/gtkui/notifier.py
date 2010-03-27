@@ -16,13 +16,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import pynotify, gobject, gtk
+import pynotify, gobject, gtk, gettext
 import popupmenu, abbrselector
 from autokey.configmanager import *
 from autokey import common
 
-TOOLTIP_RUNNING = "AutoKey - running"
-TOOLTIP_PAUSED = "AutoKey - paused"
+gettext.install("autokey")
+
+TOOLTIP_RUNNING = _("AutoKey - running")
+TOOLTIP_PAUSED = _("AutoKey - paused")
 
 STATUS_ICON_FILE = "/usr/share/pixmaps/akicon.png"
 
@@ -82,14 +84,14 @@ class Notifier(gobject.GObject):
         
     def on_popup_menu(self, status_icon, button, activate_time, data=None):
         # Main Menu items
-        enableMenuItem = gtk.CheckMenuItem("Enable Expansions")
+        enableMenuItem = gtk.CheckMenuItem(_("Enable Expansions"))
         enableMenuItem.set_active(self.app.service.is_running())
         enableMenuItem.set_sensitive(not self.app.serviceDisabled)
         
-        configureMenuItem = gtk.ImageMenuItem("Configure")
+        configureMenuItem = gtk.ImageMenuItem(_("Configure"))
         configureMenuItem.set_image(gtk.image_new_from_stock(gtk.STOCK_PREFERENCES, gtk.ICON_SIZE_MENU))
         
-        removeMenuItem = gtk.ImageMenuItem("Remove icon")
+        removeMenuItem = gtk.ImageMenuItem(_("Remove icon"))
         removeMenuItem.set_image(gtk.image_new_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU))
         
         quitMenuItem = gtk.ImageMenuItem(gtk.STOCK_QUIT)
@@ -146,7 +148,7 @@ class Notifier(gobject.GObject):
         if ConfigManager.SETTINGS[SHOW_TRAY_ICON]:
             n.attach_to_status_icon(self.icon)
         if details != '':
-            n.add_action("details", "Details", self.__notifyClicked, details)
+            n.add_action("details", _("Details"), self.__notifyClicked, details)
         self.__n = n
         self.__details = details
         n.show()

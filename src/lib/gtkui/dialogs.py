@@ -2,6 +2,17 @@
 import logging, sys, os, re
 import gtk, gtk.glade
 
+import gettext
+import locale
+
+GETTEXT_DOMAIN = 'autokey'
+
+locale.setlocale(locale.LC_ALL, '')
+for module in gtk.glade, gettext:
+    module.bindtextdomain(GETTEXT_DOMAIN)
+    module.textdomain(GETTEXT_DOMAIN)
+
+
 __all__ = ["validate", "EMPTY_FIELD_REGEX", "AbbrSettingsDialog", "HotkeySettingsDialog", "WindowFilterSettingsDialog", "RecordDialog"]
 
 from autokey import model, iomediator

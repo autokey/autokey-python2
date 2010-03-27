@@ -8,6 +8,8 @@ autokey (0.61.6-0) UNRELEASED; urgency=low
   * Fix - special hotkeys - cannot assign previously cleared hotkey - issue #9
   * Revert status icon for GTK version - it only looked good on one version of
     one distro
+  * Patch holes in gettext support for GTK version (patch contribued by
+    mail@paddy-net.com)
   
  -- Chris Dekter <cdekter@gmail.com>  Thu, 25 Mar 2010 21:30:52 +1000
 
