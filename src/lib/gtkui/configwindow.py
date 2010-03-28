@@ -482,35 +482,35 @@ class ConfigWindow:
         
         # Menu Bar
         actionGroup = gtk.ActionGroup("menu")
-          actions = [
-                    ("File", None, _("_File")),
-                    ("create", None, _("Create...")),
-                    ("new-top-folder", "folder-new", _("New _Top-Level Folder"), "", _("Create a new top-level phrase folder"), self.on_new_topfolder),
-                    ("new-folder", "folder-new", _("New _Folder"), "", _("Create a new phrase folder in the current folder"), self.on_new_folder),
-                    ("new-phrase", gtk.STOCK_NEW, _("New _Phrase"), "<control>n", _("Create a new phrase in the current folder"), self.on_new_phrase),
-                    ("new-script", gtk.STOCK_NEW, _("New _Script"), "<control><shift>n", _("Create a new script in the current folder"), self.on_new_script),
-                    ("save", gtk.STOCK_SAVE, _("_Save"), None, _("Save changes to current item"), self.on_save),
-                    ("close-window", gtk.STOCK_CLOSE, _("_Close window"), None, _("Close the configuration window"), self.on_close),
-                    ("quit", gtk.STOCK_QUIT, _("_Quit"), None, _("Completely exit AutoKey"), self.on_quit),
-                    ("Edit", None, _("_Edit")),
-                    ("cut-item", gtk.STOCK_CUT, _("Cu_t Item"), "", _("Cut the selected item"), self.on_cut_item),
-                    ("copy-item", gtk.STOCK_COPY, _("_Copy Item"), "", _("Copy the selected item"), self.on_copy_item),
-                    ("paste-item", gtk.STOCK_PASTE, _("_Paste Item"), "", _("Paste the last cut/copied item"), self.on_paste_item),
-                    ("delete-item", gtk.STOCK_DELETE, _("_Delete Item"), "<control>d", _("Delete the selected item"), self.on_delete_item),
-                    ("rename", None, _("_Rename"), "", _("Rename the selected item"), self.on_rename),
-                    ("undo", gtk.STOCK_UNDO, _("_Undo"), "<control>z", _("Undo the last edit"), self.on_undo),
-                    ("redo", gtk.STOCK_REDO, _("_Redo"), "<control><shift>z", _("Redo the last undone edit"), self.on_redo),
-                    ("preferences", gtk.STOCK_PREFERENCES, _("_Preferences"), "", _("Additional options"), self.on_advanced_settings),
-                    ("View", None, _("_View")),
-                    ("script-error", gtk.STOCK_DIALOG_ERROR, _("Vie_w script error"), None, _("View script error information"), self.on_show_error),                   
-                    #("Settings", None, _("_Settings"), None, None, None),
-                    #("advanced", gtk.STOCK_PREFERENCES, _("_Advanced Settings"), "", _("Advanced configuration options"), self.on_advanced_settings),
-                    ("Help", None, _("_Help")),
-                    ("faq", None, _("_F.A.Q."), None, _("Display Frequently Asked Questions"), self.on_show_faq),
-                    ("help", gtk.STOCK_HELP, _("Online _Help"), None, _("Display Online Help"), self.on_show_help),
-                    ("donate", gtk.STOCK_YES, _("Donate"), "", _("Make A Donation"), self.on_donate),
-                    ("about", gtk.STOCK_ABOUT, _("About AutoKey"), None, _("Show program information"), self.on_show_about)
-                    ]
+        actions = [
+                ("File", None, _("_File")),
+                ("create", None, _("Create...")),
+                ("new-top-folder", "folder-new", _("New _Top-Level Folder"), "", _("Create a new top-level phrase folder"), self.on_new_topfolder),
+                ("new-folder", "folder-new", _("New _Folder"), "", _("Create a new phrase folder in the current folder"), self.on_new_folder),
+                ("new-phrase", gtk.STOCK_NEW, _("New _Phrase"), "<control>n", _("Create a new phrase in the current folder"), self.on_new_phrase),
+                ("new-script", gtk.STOCK_NEW, _("New _Script"), "<control><shift>n", _("Create a new script in the current folder"), self.on_new_script),
+                ("save", gtk.STOCK_SAVE, _("_Save"), None, _("Save changes to current item"), self.on_save),
+                ("close-window", gtk.STOCK_CLOSE, _("_Close window"), None, _("Close the configuration window"), self.on_close),
+                ("quit", gtk.STOCK_QUIT, _("_Quit"), None, _("Completely exit AutoKey"), self.on_quit),
+                ("Edit", None, _("_Edit")),
+                ("cut-item", gtk.STOCK_CUT, _("Cu_t Item"), "", _("Cut the selected item"), self.on_cut_item),
+                ("copy-item", gtk.STOCK_COPY, _("_Copy Item"), "", _("Copy the selected item"), self.on_copy_item),
+                ("paste-item", gtk.STOCK_PASTE, _("_Paste Item"), "", _("Paste the last cut/copied item"), self.on_paste_item),
+                ("delete-item", gtk.STOCK_DELETE, _("_Delete Item"), "<control>d", _("Delete the selected item"), self.on_delete_item),
+                ("rename", None, _("_Rename"), "", _("Rename the selected item"), self.on_rename),
+                ("undo", gtk.STOCK_UNDO, _("_Undo"), "<control>z", _("Undo the last edit"), self.on_undo),
+                ("redo", gtk.STOCK_REDO, _("_Redo"), "<control><shift>z", _("Redo the last undone edit"), self.on_redo),
+                ("preferences", gtk.STOCK_PREFERENCES, _("_Preferences"), "", _("Additional options"), self.on_advanced_settings),
+                ("View", None, _("_View")),
+                ("script-error", gtk.STOCK_DIALOG_ERROR, _("Vie_w script error"), None, _("View script error information"), self.on_show_error),
+                #("Settings", None, _("_Settings"), None, None, None),
+                #("advanced", gtk.STOCK_PREFERENCES, _("_Advanced Settings"), "", _("Advanced configuration options"), self.on_advanced_settings),
+                ("Help", None, _("_Help")),
+                ("faq", None, _("_F.A.Q."), None, _("Display Frequently Asked Questions"), self.on_show_faq),
+                ("help", gtk.STOCK_HELP, _("Online _Help"), None, _("Display Online Help"), self.on_show_help),
+                ("donate", gtk.STOCK_YES, _("Donate"), "", _("Make A Donation"), self.on_donate),
+                ("about", gtk.STOCK_ABOUT, _("About AutoKey"), None, _("Show program information"), self.on_show_about)
+                ]
         actionGroup.add_actions(actions)
         
         toggleActions = [
@@ -1040,7 +1040,7 @@ class ConfigWindow:
                 response = dlg.run()
                  
                 if response == gtk.RESPONSE_YES:
-                    result = current.save()
+                    current.save()
                 elif response == gtk.RESPONSE_CANCEL:
                     result = True
                 
