@@ -17,9 +17,9 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 import os, os.path, shutil, logging, pickle
-import iomediator, interface
+import iomediator, interface, common
 
-APP_VERSION = "0.61.6"
+APP_VERSION = common.VERSION
 
 _logger = logging.getLogger("config-manager")
 

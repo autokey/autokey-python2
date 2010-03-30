@@ -1,4 +1,12 @@
-autokey (0.61.6-0) UNRELEASED; urgency=low
+autokey (0.61.7-0~karmic) karmic; urgency=low
+
+  * Fix incorrect reference to instance variable in KDE version
+  * Fix incorrect method signature in KeyGrabber class
+  * ConfigManager uses version from common.py now
+
+ -- Chris Dekter <cdekter@gmail.com>  Tue, 30 Mar 2010 21:30:52 +1000
+
+autokey (0.61.6-0~karmic) karmic; urgency=low
 
   * Fix problem with autostart in GTK version - issue #27
   * Allow system.exec_command to be used with long-running processes
