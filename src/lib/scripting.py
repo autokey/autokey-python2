@@ -38,8 +38,11 @@ class Keyboard:
         
         @param keyString: string of keys (including special keys) to send
         """
+        if not isinstance(keyString, unicode):
+            keyString = keyString.decode("utf-8")
+
         self.mediator.interface.begin_send()
-        self.mediator.send_string(keyString.decode("utf-8"))
+        self.mediator.send_string(keyString)
         self.mediator.interface.finish_send()
         
     def send_key(self, key, repeat=1):
@@ -50,9 +53,12 @@ class Keyboard:
         
         @param key: they key to be sent (e.g. "s" or "<enter>")
         @param repeat: number of times to repeat the key event
-        """        
+        """
+        if not isinstance(key, unicode):
+            key = key.decode("utf-8")
+
         for x in xrange(repeat):
-            self.mediator.send_key(key.decode("utf-8"))
+            self.mediator.send_key(key)
         self.mediator.flush()
         
     def press_key(self, key):
