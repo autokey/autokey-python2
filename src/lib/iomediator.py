@@ -552,7 +552,8 @@ class Recorder(KeyGrabber):
                 self.targetParent.start_key_sequence()
                     
             modifierCount = len(modifiers)
-            
+            if key == '"':
+                self.targetParent.append_key('\\')
             if modifierCount > 1 or (modifierCount == 1 and Key.SHIFT not in modifiers) or \
                     (Key.SHIFT in modifiers and len(rawKey) > 1):
                 self.targetParent.append_hotkey(rawKey, modifiers)
