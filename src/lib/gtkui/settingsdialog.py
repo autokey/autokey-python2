@@ -79,13 +79,17 @@ class SettingsDialog:
         # Hotkeys
         self.showConfigDlg = GlobalHotkeyDialog(parent, configManager, self.on_config_response)
         self.toggleMonitorDlg = GlobalHotkeyDialog(parent, configManager, self.on_monitor_response)
+        self.showRecordDlg = GlobalHotkeyDialog(parent, configManager, self.on_record_response)
         self.configKeyLabel = builder.get_object("configKeyLabel")
         self.clearConfigButton = builder.get_object("clearConfigButton")
         self.monitorKeyLabel = builder.get_object("monitorKeyLabel")
         self.clearMonitorButton = builder.get_object("clearMonitorButton")    
-        
+        self.recordKeyLabel = builder.get_object("recordKeyLabel")
+        self.clearRecordButton = builder.get_object("clearRecordButton")    
         self.useConfigHotkey = self.__loadHotkey(configManager.configHotkey, self.configKeyLabel, 
                                                     self.showConfigDlg, self.clearConfigButton)
+        self.useRecordHotkey = self.__loadHotkey(configManager.recordHotkey, self.recordKeyLabel, 
+                                                    self.showRecordDlg, self.clearRecordButton)
         self.useServiceHotkey = self.__loadHotkey(configManager.toggleServiceHotkey, self.monitorKeyLabel, 
                                                     self.toggleMonitorDlg, self.clearMonitorButton)
                                                     
@@ -124,8 +128,9 @@ class SettingsDialog:
         self.configManager.userCodeDir = self.userModuleChooserButton.get_current_folder()
         sys.path.append(self.configManager.userCodeDir)
         
-        configHotkey = self.configManager.configHotkey
+        recordHotkey = self.configManager.recordHotkey
         toggleHotkey = self.configManager.toggleServiceHotkey
+        configHotkey = self.configManager.configHotkey
         app = self.configManager.app
 
         if configHotkey.enabled:
@@ -134,6 +139,13 @@ class SettingsDialog:
         if self.useConfigHotkey:
             self.showConfigDlg.save(configHotkey)
             app.hotkey_created(configHotkey)
+
+        if recordHotkey.enabled:
+            app.hotkey_removed(recordHotkey)
+        recordHotkey.enabled = self.useRecordHotkey
+        if self.useRecordHotkey:
+            self.showRecordDlg.save(recordHotkey)
+            app.hotkey_created(recordHotkey)
 
         if toggleHotkey.enabled:
             app.hotkey_removed(toggleHotkey)
@@ -192,7 +204,7 @@ class SettingsDialog:
 
     def on_setMonitorButton_pressed(self, widget, data=None):
         self.toggleMonitorDlg.run()
-        
+
     def on_monitor_response(self, res):
         if res == Gtk.ResponseType.OK:
             self.useServiceHotkey = True
@@ -200,10 +212,26 @@ class SettingsDialog:
             modifiers = self.toggleMonitorDlg.build_modifiers()
             self.monitorKeyLabel.set_text(self.build_hotkey_string(key, modifiers))
             self.clearMonitorButton.set_sensitive(True)
-            
+
     def on_clearMonitorButton_pressed(self, widget, data=None):
         self.useServiceHotkey = False
         self.clearMonitorButton.set_sensitive(False)
         self.monitorKeyLabel.set_text(_("(None configured)"))
         self.toggleMonitorDlg.reset()
 
+    def on_setRecordButton_pressed(self, widget, data=None):
+        self.showRecordDlg.run()
+        
+    def on_record_response(self, res):
+        if res == Gtk.ResponseType.OK:
+            self.useRecordHotkey = True
+            key = self.showRecordDlg.key
+            modifiers = self.showRecordDlg.build_modifiers()
+            self.recordKeyLabel.set_text(self.build_hotkey_string(key, modifiers))
+            self.clearRecordButton.set_sensitive(True)
+            
+
+    def on_clearRecordButton_pressed(self, widget, data=None):
+        self.clearRecordButton.set_sensitive(False)
+        self.recordKeyLabel.set_text(_("(None configured)"))
+        self.showRecordDlg.reset()

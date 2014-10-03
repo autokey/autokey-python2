@@ -293,7 +293,7 @@ class AbstractHotkey(AbstractWindowFilter):
     def get_serializable(self):
         d = {
             "modifiers": self.modifiers,
-            "hotKey": self.hotKey
+            "hotKey": self.hotKey,
             }
         return d
 
@@ -471,9 +471,6 @@ class Folder(AbstractAbbreviation, AbstractHotkey, AbstractWindowFilter):
     def get_tuple(self):
         return ("folder", self.title, self.get_abbreviations(), self.get_hotkey_string(), self)
     
-    def set_modes(self, modes):
-        self.modes = modes
-        
     def add_folder(self, folder):
         folder.parent = self
         #self.folders[folder.title] = folder
@@ -897,6 +894,8 @@ class Script(AbstractAbbreviation, AbstractHotkey, AbstractWindowFilter):
         self.omitTrigger = False
         self.parent = None
         self.showInTrayMenu = False
+        self.grabKeyboard = False
+        self.grabMouse = False
         self.path = path
         
     def build_path(self, baseName=None):        
@@ -931,6 +930,8 @@ class Script(AbstractAbbreviation, AbstractHotkey, AbstractWindowFilter):
             "prompt": self.prompt,
             "omitTrigger": self.omitTrigger,
             "showInTrayMenu": self.showInTrayMenu,
+            "grabKeyboard": self.grabKeyboard,
+            "grabMouse": self.grabMouse,
             "abbreviation": AbstractAbbreviation.get_serializable(self),
             "hotkey": AbstractHotkey.get_serializable(self),
             "filter": AbstractWindowFilter.get_serializable(self)
@@ -964,8 +965,16 @@ class Script(AbstractAbbreviation, AbstractHotkey, AbstractWindowFilter):
         self.usageCount = data["usageCount"]
         self.prompt = data["prompt"]
         self.omitTrigger = data["omitTrigger"]
-        self.showInTrayMenu = data["showInTrayMenu"]
         AbstractAbbreviation.load_from_serialized(self, data["abbreviation"])
+        self.showInTrayMenu = data["showInTrayMenu"]
+        if 'grabKeyboard' in data:
+            self.grabKeyboard = data["grabKeyboard"]
+        else:
+            self.grabKeyboard = False
+        if 'grabMouse' in data:
+            self.grabMouse = data["grabMouse"]
+        else:
+            self.grabMouse = False
         AbstractHotkey.load_from_serialized(self, data["hotkey"])
         AbstractWindowFilter.load_from_serialized(self, data["filter"])
         

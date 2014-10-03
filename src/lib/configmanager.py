@@ -45,6 +45,7 @@ PROMPT_TO_SAVE = "promptToSave"
 INPUT_SAVINGS = "inputSavings"
 ENABLE_QT4_WORKAROUND = "enableQT4Workaround"
 INTERFACE_TYPE = "interfaceType"
+RECORD_TIMING_THRESHOLD = "recordTimingThreshold"
 UNDO_USING_BACKSPACE = "undoUsingBackspace"
 WINDOW_DEFAULT_SIZE = "windowDefaultSize"
 HPANE_POSITION = "hPanePosition"
@@ -170,6 +171,7 @@ class ConfigManager:
                 #PREDICTIVE_LENGTH : 5,
                 ENABLE_QT4_WORKAROUND : False,
                 INTERFACE_TYPE : iomediator.X_RECORD_INTERFACE,
+                RECORD_TIMING_THRESHOLD: 0.1,
                 UNDO_USING_BACKSPACE : True,
                 WINDOW_DEFAULT_SIZE : (600, 400),
                 HPANE_POSITION : 150,
@@ -203,6 +205,10 @@ class ConfigManager:
         self.toggleServiceHotkey = GlobalHotkey()
         self.toggleServiceHotkey.set_hotkey(["<super>", "<shift>"], "k")
         self.toggleServiceHotkey.enabled = True    
+
+        self.recordHotkey = GlobalHotkey()
+        self.recordHotkey.set_hotkey([], "<button27>")
+        self.recordHotkey.enabled = True
         
         app.init_global_hotkeys(self)        
         
@@ -321,7 +327,8 @@ dialog.info_dialog("Window information",
             "settings": ConfigManager.SETTINGS,
             "folders": extraFolders,
             "toggleServiceHotkey": self.toggleServiceHotkey.get_serializable(),
-            "configHotkey": self.configHotkey.get_serializable()
+            "configHotkey": self.configHotkey.get_serializable(),
+            "recordHotkey": self.recordHotkey.get_serializable()
             }
         return d
 
@@ -363,6 +370,10 @@ dialog.info_dialog("Window information",
 
             self.toggleServiceHotkey.load_from_serialized(data["toggleServiceHotkey"])
             self.configHotkey.load_from_serialized(data["configHotkey"])
+            self.recordHotkey.load_from_serialized(data["recordHotkey"])
+            self.recordHotkey = GlobalHotkey()
+            self.recordHotkey.set_hotkey([], "<button27>")
+            self.recordHotkey.enabled = True
             
             if self.VERSION < self.CLASS_VERSION:
                 self.upgrade()
@@ -502,6 +513,7 @@ dialog.info_dialog("Window information",
 
         self.toggleServiceHotkey.load_from_serialized(data["toggleServiceHotkey"])
         self.configHotkey.load_from_serialized(data["configHotkey"])
+        self.recordHotkey.load_from_serialized(data["recordHotkey"])
 
         self.config_altered(False)
         _logger.info("Successfully reloaded global configuration")
@@ -523,6 +535,12 @@ dialog.info_dialog("Window information",
             self.SETTINGS[WORKAROUND_APP_REGEX] += "|krdc.Krdc"
             self.workAroundApps = re.compile(self.SETTINGS[WORKAROUND_APP_REGEX])
             self.SETTINGS[SCRIPT_GLOBALS] = {}
+
+        if self.VERSION < "0.91.1":
+            _logger.info("Doing upgrade to 0.91.1")
+            self.recordHotkey = GlobalHotkey()
+            self.recordHotkey.set_hotkey([], "<button27>")
+            self.recordHotkey.enabled = True
         
         self.VERSION = common.VERSION    
         self.config_altered(True)
@@ -562,6 +580,7 @@ dialog.info_dialog("Window information",
             self.__processFolder(folder)
         
         self.globalHotkeys = []
+        self.globalHotkeys.append(self.recordHotkey)
         self.globalHotkeys.append(self.configHotkey)
         self.globalHotkeys.append(self.toggleServiceHotkey)
         #_logger.debug("Global hotkeys: %s", self.globalHotkeys)

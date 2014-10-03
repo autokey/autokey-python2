@@ -13,7 +13,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkLinkButton" id="linkButton">
+          <object class="GtkLinkButton" id="fileLinkButton">
             <property name="label" translatable="yes">(Unsaved)</property>
             <property name="use_action_appearance">False</property>
             <property name="visible">True</property>
@@ -48,7 +48,7 @@
                     <property name="can_focus">False</property>
                     <property name="spacing">5</property>
                     <child>
-                      <object class="GtkCheckButton" id="showInTrayCheckbox">
+                      <object class="GtkCheckButton" id="showInTrayCheckButton">
                         <property name="label" translatable="yes">Show in notification icon menu</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>

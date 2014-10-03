@@ -337,9 +337,9 @@ class FolderPage:
         self.ui = builder.get_object("folderpage")
         builder.connect_signals(self)
         
-        self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
-        self.linkButton = builder.get_object("linkButton")
-        label = self.linkButton.get_child()
+        self.showInTrayCheckButton = builder.get_object("showInTrayCheckButton")
+        self.fileLinkButton = builder.get_object("fileLinkButton")
+        label = self.fileLinkButton.get_child()
         label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         
         vbox = builder.get_object("settingsVbox")
@@ -348,20 +348,20 @@ class FolderPage:
         
     def load(self, theFolder):
         self.currentFolder = theFolder
-        self.showInTrayCheckbox.set_active(theFolder.showInTrayMenu)
+        self.showInTrayCheckButton.set_active(theFolder.showInTrayMenu)
         self.settingsWidget.load(theFolder)
         
         if self.is_new_item():
-            self.linkButton.set_sensitive(False)
-            self.linkButton.set_label(_("(Unsaved)"))
+            self.fileLinkButton.set_sensitive(False)
+            self.fileLinkButton.set_label(_("(Unsaved)"))
         else:
-            set_linkbutton(self.linkButton, self.currentFolder.path)
+            set_linkbutton(self.fileLinkButton, self.currentFolder.path)
     
     def save(self):
-        self.currentFolder.showInTrayMenu = self.showInTrayCheckbox.get_active()
+        self.currentFolder.showInTrayMenu = self.showInTrayCheckButton.get_active()
         self.settingsWidget.save()
         self.currentFolder.persist()
-        set_linkbutton(self.linkButton, self.currentFolder.path)
+        set_linkbutton(self.fileLinkButton, self.currentFolder.path)
         
         return not self.currentFolder.path.startswith(CONFIG_DEFAULT_FOLDER)
         
@@ -406,21 +406,12 @@ class ScriptPage:
         self.ui = builder.get_object("scriptpage")
         builder.connect_signals(self)
         
-        self.buffer = GtkSource.Buffer()
-        self.buffer.connect("changed", self.on_modified)
-        self.editor = GtkSource.View.new_with_buffer(self.buffer)
-        scrolledWindow = builder.get_object("scrolledWindow")
-        scrolledWindow.add(self.editor)
-        
-        # Editor font
-        settings = Gio.Settings.new("org.gnome.desktop.interface")
-        fontDesc = Pango.font_description_from_string(settings.get_string("monospace-font-name"))
-        self.editor.modify_font(fontDesc)
-        
-        self.promptCheckbox = builder.get_object("promptCheckbox")
-        self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
-        self.linkButton = builder.get_object("linkButton")
-        label = self.linkButton.get_child()
+        self.promptCheckButton = builder.get_object("promptCheckButton")
+        self.showInTrayCheckButton = builder.get_object("showInTrayCheckButton")
+        self.fileLinkButton = builder.get_object("fileLinkButton")
+        self.grabKeyboardCheckButton = builder.get_object("grabKeyboardCheckButton")
+        self.grabMouseCheckButton = builder.get_object("grabMouseCheckButton")
+        label = self.fileLinkButton.get_child()
         label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
 
         vbox = builder.get_object("settingsVbox")
@@ -430,15 +421,24 @@ class ScriptPage:
         # Configure script editor
         self.__m = GtkSource.LanguageManager()
         self.__sm = GtkSource.StyleSchemeManager()
+        self.buffer = GtkSource.Buffer()
         self.buffer.set_language(self.__m.get_language("python"))
         self.buffer.set_style_scheme(self.__sm.get_scheme("classic"))
+        self.buffer.connect("changed", self.on_modified)
+        self.editor = GtkSource.View.new_with_buffer(self.buffer)
+        settings = Gio.Settings.new("org.gnome.desktop.interface")
+        fontDesc = Pango.font_description_from_string(settings.get_string("monospace-font-name"))
+        self.editor.modify_font(fontDesc)
         self.editor.set_auto_indent(True)
         self.editor.set_smart_home_end(True)
-        self.editor.set_insert_spaces_instead_of_tabs(True)
         self.editor.set_tab_width(4)
+        self.editor.set_insert_spaces_instead_of_tabs(False)
+        
+        self.editorContainer = builder.get_object("scrolledWindow")
+        self.editorContainer.add(self.editor)
         
         self.ui.show_all()
-
+        
     def load(self, theScript):
         self.currentItem = theScript
         
@@ -447,26 +447,30 @@ class ScriptPage:
         self.buffer.end_not_undoable_action()
         self.buffer.place_cursor(self.buffer.get_start_iter())
         
-        self.promptCheckbox.set_active(theScript.prompt)
-        self.showInTrayCheckbox.set_active(theScript.showInTrayMenu)
+        self.promptCheckButton.set_active(theScript.prompt)
+        self.showInTrayCheckButton.set_active(theScript.showInTrayMenu)
+        self.grabKeyboardCheckButton.set_active(theScript.grabKeyboard)
+        self.grabMouseCheckButton.set_active(theScript.grabMouse)
         self.settingsWidget.load(theScript)
         
         if self.is_new_item():
-            self.linkButton.set_sensitive(False)
-            self.linkButton.set_label(_("(Unsaved)"))
+            self.fileLinkButton.set_sensitive(False)
+            self.fileLinkButton.set_label(_("(Unsaved)"))
         else:
-            set_linkbutton(self.linkButton, self.currentItem.path)
+            set_linkbutton(self.fileLinkButton, self.currentItem.path)
     
     def save(self):
         self.currentItem.code = self.buffer.get_text(self.buffer.get_start_iter(),
                                     self.buffer.get_end_iter(), False).decode("utf-8")
     
-        self.currentItem.prompt = self.promptCheckbox.get_active()
-        self.currentItem.showInTrayMenu = self.showInTrayCheckbox.get_active()
+        self.currentItem.prompt = self.promptCheckButton.get_active()
+        self.currentItem.showInTrayMenu = self.showInTrayCheckButton.get_active()
+        self.currentItem.grabKeyboard = self.grabKeyboardCheckButton.get_active()
+        self.currentItem.grabMouse = self.grabMouseCheckButton.get_active()
         
         self.settingsWidget.save()
         self.currentItem.persist()
-        set_linkbutton(self.linkButton, self.currentItem.path)
+        set_linkbutton(self.fileLinkButton, self.currentItem.path)
         
         return False
         
@@ -508,41 +512,48 @@ class ScriptPage:
     def record_keystrokes(self, isActive):    
         if isActive:
             self.recorder = Recorder(self)
-            dlg = RecordDialog(self.ui, self.on_rec_response)
+            dlg = RecordDialog(self, self.parentWindow.ui, self.on_rec_response)
             dlg.run()
         else:
             self.recorder.stop()
+            self.editor.set_editable(True);
             
-    def on_rec_response(self, response, recKb, recMouse, delay):
+    def on_rec_response(self, response, recKb, recMouse, recTiming, delay):
         if response == Gtk.ResponseType.OK:
             self.recorder.set_record_keyboard(recKb)
             self.recorder.set_record_mouse(recMouse)
+            self.recorder.set_record_timing(recTiming)
             self.recorder.start(delay)
         elif response == Gtk.ResponseType.CANCEL:
             self.parentWindow.record_stopped()
             
     def cancel_record(self):
         self.recorder.stop()
+        self.editor.set_editable(True);
         
     def start_record(self):
+        self.editor.set_editable(False);
         self.buffer.insert(self.buffer.get_end_iter(), "\n")
         
     def start_key_sequence(self):
         self.buffer.insert(self.buffer.get_end_iter(), "keyboard.send_keys(\"")
         
-    def end_key_sequence(self):
-        self.buffer.insert(self.buffer.get_end_iter(), "\")\n")        
+    def end_key_sequence(self,interval=0):
+        if interval:
+            self.buffer.insert(self.buffer.get_end_iter(), "\",%f)\n" % (interval))
+        else:                
+            self.buffer.insert(self.buffer.get_end_iter(), "\")\n")        
+    
+    def append_sleep(self,elapsed=0.0):
+        if elapsed:
+            self.buffer.insert(self.buffer.get_end_iter(), "engine.sleep(%f)\n" % (elapsed))
     
     def append_key(self, key):
-        #line, pos = self.buffer.getCursorPosition()
         self.buffer.insert(self.buffer.get_end_iter(), key)
-        #self.scriptCodeEditor.setCursorPosition(line, pos + len(key))
         
     def append_hotkey(self, key, modifiers):
-        #line, pos = self.scriptCodeEditor.getCursorPosition()
         keyString = self.currentItem.get_hotkey_string(key, modifiers)
         self.buffer.insert(self.buffer.get_end_iter(), keyString)
-        #self.scriptCodeEditor.setCursorPosition(line, pos + len(keyString))
         
     def append_mouseclick(self, xCoord, yCoord, button, windowTitle):
         self.buffer.insert(self.buffer.get_end_iter(), "mouse.click_relative(%d, %d, %d) # %s\n" % (xCoord, yCoord, int(button), windowTitle))
@@ -561,7 +572,12 @@ class ScriptPage:
         self.set_dirty()
         self.parentWindow.set_undo_available(self.buffer.can_undo())
         self.parentWindow.set_redo_available(self.buffer.can_redo())
-    
+        
+    def scroll_to_end(self):
+        insert_mark = self.buffer.get_insert()
+        self.buffer.place_cursor(self.textbuffer.get_end_iter())
+        self.textview.scroll_to_mark(insert_mark , 0.0, True, 0.0, 1.0)
+         
     def set_dirty(self):
         self.parentWindow.set_dirty(True)
 
@@ -579,14 +595,14 @@ class PhrasePage(ScriptPage):
         self.editor = GtkSource.View.new_with_buffer(self.buffer)
         scrolledWindow = builder.get_object("scrolledWindow")
         scrolledWindow.add(self.editor)
-        self.promptCheckbox = builder.get_object("promptCheckbox")
-        self.showInTrayCheckbox = builder.get_object("showInTrayCheckbox")
+        self.promptCheckButton = builder.get_object("promptCheckButton")
+        self.showInTrayCheckButton = builder.get_object("showInTrayCheckButton")
         self.sendModeCombo = Gtk.ComboBoxText.new()
         self.sendModeCombo.connect("changed", self.on_modified)
         sendModeHbox = builder.get_object("sendModeHbox")
         sendModeHbox.pack_start(self.sendModeCombo, False, False, 0)
         
-        self.linkButton = builder.get_object("linkButton")
+        self.fileLinkButton = builder.get_object("fileLinkButton")
 
         vbox = builder.get_object("settingsVbox")
         self.settingsWidget = SettingsWidget(parentWindow)
@@ -622,15 +638,15 @@ class PhrasePage(ScriptPage):
         self.buffer.end_not_undoable_action()
         self.buffer.place_cursor(self.buffer.get_start_iter())
         
-        self.promptCheckbox.set_active(thePhrase.prompt)
-        self.showInTrayCheckbox.set_active(thePhrase.showInTrayMenu)
+        self.promptCheckButton.set_active(thePhrase.prompt)
+        self.showInTrayCheckButton.set_active(thePhrase.showInTrayMenu)
         self.settingsWidget.load(thePhrase)
         
         if self.is_new_item():
-            self.linkButton.set_sensitive(False)
-            self.linkButton.set_label(_("(Unsaved)"))
+            self.fileLinkButton.set_sensitive(False)
+            self.fileLinkButton.set_label(_("(Unsaved)"))
         else:
-            set_linkbutton(self.linkButton, self.currentItem.path)
+            set_linkbutton(self.fileLinkButton, self.currentItem.path)
 
         l = model.SEND_MODES.keys()
         l.sort()
@@ -644,13 +660,13 @@ class PhrasePage(ScriptPage):
         self.currentItem.phrase = self.buffer.get_text(self.buffer.get_start_iter(),
                                                         self.buffer.get_end_iter(), False).decode("utf-8")
     
-        self.currentItem.prompt = self.promptCheckbox.get_active()
-        self.currentItem.showInTrayMenu = self.showInTrayCheckbox.get_active()
+        self.currentItem.prompt = self.promptCheckButton.get_active()
+        self.currentItem.showInTrayMenu = self.showInTrayCheckButton.get_active()
         self.currentItem.sendMode = model.SEND_MODES[self.sendModeCombo.get_active_text()]
         
         self.settingsWidget.save()
         self.currentItem.persist()
-        set_linkbutton(self.linkButton, self.currentItem.path)
+        set_linkbutton(self.fileLinkButton, self.currentItem.path)
         return False
         
     def validate(self):
@@ -682,12 +698,14 @@ class PhrasePage(ScriptPage):
             dlg.run()
             dlg.destroy()
             self.editor.set_sensitive(False)
+            self.editor.set_editable(False)
             self.recorder = Recorder(self)
             self.recorder.set_record_keyboard(True)
             self.recorder.set_record_mouse(True)
             self.recorder.start_withgrab()
         else:
             self.recorder.stop()
+            self.editor.set_editable(True)
             self.editor.set_sensitive(True)
         
     def start_record(self):
