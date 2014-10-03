@@ -717,11 +717,11 @@ class XInterfaceBase(threading.Thread):
         """
         Send a specific non-printing key, eg Up, Left, etc
         """
-        self.__enqueue(self.__sendKey, keyName)
+        self.__enqueue(self.__sendKey, keyName, method)
         
     def __sendKey(self, keyName, method='event'):
         logger.debug("Send special key: [%r]", keyName)
-        self.__sendKeyCode(self.__lookupKeyCode(keyName), method)
+        self.__sendKeyCode(self.__lookupKeyCode(keyName), method=method)
 
     def fake_keypress(self, keyName):
          self.__enqueue(self.__fakeKeypress, keyName)
