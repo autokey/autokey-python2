@@ -252,8 +252,7 @@ class AbbrSettingsDialog(DialogBase):
     
     def on_cell_modified(self, renderer, path, newText, data=None):
         model, curIter = self.abbrList.get_selection().get_selected()
-        oldText = model.get_value(curIter, 0) or ""
-        if EMPTY_FIELD_REGEX.match(newText) and EMPTY_FIELD_REGEX.match(oldText):
+        if EMPTY_FIELD_REGEX.match(newText):
             self.on_removeButton_clicked(renderer)
         else:
             model.set(curIter, 0, newText)      
