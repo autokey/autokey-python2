@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2011 Chris Dekter
+# Copyright (C) 2014 Daren Schwenke
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +61,40 @@ class Key:
     F11 = "<f11>"
     F12 = "<f12>"
     
+    # Mouse buttons
+    BUTTON1 = "<button1>"
+    BUTTON2 = "<button2>"
+    BUTTON3 = "<button3>"
+    BUTTON4 = "<button4>"
+    BUTTON5 = "<button5>"
+    BUTTON6 = "<button6>"
+    BUTTON7 = "<button7>"
+    BUTTON8 = "<button8>"
+    BUTTON9 = "<button9>"
+    BUTTON10 = "<button10>"
+    BUTTON11 = "<button11>"
+    BUTTON12 = "<button12>"
+    BUTTON13 = "<button13>"
+    BUTTON14 = "<button14>"
+    BUTTON15 = "<button15>"
+    BUTTON16 = "<button16>"
+    BUTTON17 = "<button17>"
+    BUTTON18 = "<button18>"
+    BUTTON19 = "<button19>"
+    BUTTON20 = "<button20>"
+    BUTTON21 = "<button21>"
+    BUTTON22 = "<button22>"
+    BUTTON23 = "<button23>"
+    BUTTON24 = "<button24>"
+    BUTTON25 = "<button25>"
+    BUTTON26 = "<button26>"
+    BUTTON27 = "<button27>"
+    BUTTON28 = "<button28>"
+    BUTTON29 = "<button29>"
+    BUTTON30 = "<button30>"
+    BUTTON31 = "<button31>"
+    BUTTON32 = "<button32>"
+    
     # Other
     ESCAPE = "<escape>"
     INSERT = "<insert>"
@@ -106,6 +141,7 @@ SEND_LOCK = threading.Lock()
 
 from interface import *
 from configmanager import *
+from gi.repository import Gdk
 
 class IoMediator(threading.Thread):
     """
@@ -208,10 +244,14 @@ class IoMediator(threading.Thread):
     def handle_mouse_click(self, rootX, rootY, relX, relY, button, windowInfo):
         for target in self.listeners:
             target.handle_mouseclick(rootX, rootY, relX, relY, button, windowInfo)
+
+    def handle_error(self, error):
+        for target in self.listeners:
+            target.handle_error(error)
         
     # Methods for expansion service ----
 
-    def send_string(self, string):
+    def send_string(self, string, interval=0, method='event'):
         """
         Sends the given string for output.
         """
@@ -220,10 +260,10 @@ class IoMediator(threading.Thread):
 
         k = Key()
         
-        string = string.replace('\n', "<enter>")
-        string = string.replace('\t', "<tab>")
+        string = string.replace("\n", "<enter>")
+        string = string.replace("\t", "<tab>")
         
-        _logger.debug("Send via event interface")
+        _logger.debug("Send via %r interface",method)
         self.__clearModifiers()
         modifiers = []            
         for section in KEY_SPLIT_RE.split(string):
@@ -241,14 +281,14 @@ class IoMediator(threading.Thread):
                         else:
                             self.interface.send_modified_key(section[0], modifiers)
                             if len(section) > 1:
-                                self.interface.send_string(section[1:])
+                                self.interface.send_string(section[1:], interval, method)
                             modifiers = []
                     else:
                         # Normal string/key operation                    
                         if k.is_key(section):
                             self.interface.send_key(section)
                         else:
-                            self.interface.send_string(section)
+                            self.interface.send_string(section, interval, method)
                             
         self.__reapplyModifiers()
         
@@ -269,20 +309,23 @@ class IoMediator(threading.Thread):
                 
         self.send_backspace(backspaces)
         
-    def send_key(self, keyName):
-        keyName = keyName.replace('\n', "<enter>")
-        self.interface.send_key(keyName)
+    def send_key(self, keyName, method='event'):
+        keyName = keyName.replace("\n", "<enter>")
+        if method == 'event':
+            self.interface.send_key(keyName)
+        else:
+            self.interface.fake_keypress(keyName)
         
     def press_key(self, keyName):
-        keyName = keyName.replace('\n', "<enter>")
+        keyName = keyName.replace("\n", "<enter>")
         self.interface.fake_keydown(keyName)
         
     def release_key(self, keyName):
-        keyName = keyName.replace('\n', "<enter>")
+        keyName = keyName.replace("\n", "<enter>")
         self.interface.fake_keyup(keyName)                
 
     def fake_keypress(self, keyName):
-        keyName = keyName.replace('\n', "<enter>")
+        keyName = keyName.replace("\n", "<enter>")
         self.interface.fake_keypress(keyName)
 
     def send_left(self, count):
@@ -378,24 +421,45 @@ class KeyGrabber:
     
     def __init__(self, parent):
         self.targetParent = parent
+        self.timer = None
     
     def start(self):
         # In QT version, sometimes the mouseclick event arrives before we finish initialising
         # sleep slightly to prevent this
-        time.sleep(0.1)
+        time.sleep(0.15)
         IoMediator.listeners.append(self)
+        self.timer = threading.Timer(5,self.timeout_grab)
         CURRENT_INTERFACE.grab_keyboard()
+        self.timer.start()
                  
-    def handle_keypress(self, rawKey, modifiers, key, *args):
-        if not rawKey in MODIFIERS:
-            IoMediator.listeners.remove(self)
-            self.targetParent.set_key(rawKey, modifiers)
-            CURRENT_INTERFACE.ungrab_keyboard()
-    
-    def handle_mouseclick(self, rootX, rootY, relX, relY, button, windowInfo):
+    def timeout_grab(self):
         IoMediator.listeners.remove(self)
         CURRENT_INTERFACE.ungrab_keyboard()
         self.targetParent.cancel_grab()
+        
+    def handle_keypress(self, rawKey, modifiers, key, *args):
+        if not rawKey in MODIFIERS:
+            if self.timer:
+                self.timer.cancel()
+            IoMediator.listeners.remove(self)
+            self.targetParent.set_key(rawKey, modifiers)
+            CURRENT_INTERFACE.ungrab_keyboard()
+
+    def handle_error(self,error):
+        IoMediator.listeners.remove(self)
+        CURRENT_INTERFACE.ungrab_keyboard()
+        self.targetParent.cancel_grab()
+         
+    def handle_mouseclick(self, rootX, rootY, relX, relY, button, windowInfo):
+        if self.timer:
+            self.timer.cancel()
+        IoMediator.listeners.remove(self)
+        if not button in [1,2,3]:
+            rawKey = '<button{}>'.format(str(button))
+            self.targetParent.set_key(rawKey, [])
+        else:
+            self.targetParent.cancel_grab()
+        CURRENT_INTERFACE.ungrab_keyboard()
 
 class Recorder(KeyGrabber):
     """
@@ -404,7 +468,12 @@ class Recorder(KeyGrabber):
     
     def __init__(self, parent):
         KeyGrabber.__init__(self, parent)
-        self.insideKeys = False
+        self.insideKeys = self.delayFinished = False
+        self.startTime = self.eventTime = self.delay = 0.0
+        self.withGrab = False
+        
+        # Minimum timing interval to generate a sleep for
+        self.recordTimingThreshold = ConfigManager.SETTINGS[RECORD_TIMING_THRESHOLD]
         
     def start(self, delay):
         time.sleep(0.1)
@@ -412,6 +481,7 @@ class Recorder(KeyGrabber):
         self.targetParent.start_record()
         self.startTime = time.time()
         self.delay = delay
+        self.withGrab = False
         self.delayFinished = False
         
     def start_withgrab(self):
@@ -419,8 +489,8 @@ class Recorder(KeyGrabber):
         IoMediator.listeners.append(self)
         self.targetParent.start_record()
         self.startTime = time.time()
-        self.delay = 0
         self.delayFinished = True
+        self.withGrab = True
         CURRENT_INTERFACE.grab_keyboard()
         
     
@@ -444,21 +514,43 @@ class Recorder(KeyGrabber):
 
     def set_record_mouse(self, doIt):
         self.recordMouse = doIt
+
+    def set_record_timing(self, doIt):
+        self.recordTiming = doIt
         
     def __delayPassed(self):
         if not self.delayFinished:
             now = time.time()
             delta = datetime.datetime.utcfromtimestamp(now - self.startTime)
             self.delayFinished = (delta.second > self.delay)
-            
+        if self.delayFinished:
+            self.eventTime = time.time()
         return self.delayFinished
-                
+
+    def handle_error(self,error):
+        if self.withGrab:
+            self.stop_withgrab()
+        else:
+            self.stop()
+    
     def handle_keypress(self, rawKey, modifiers, key, *args):
         if self.recordKeyboard and self.__delayPassed():
+            Gdk.threads_enter()
+            if self.recordTiming:
+                now = time.time()
+                elapsed = now - self.eventTime
+                if elapsed > self.recordTimingThreshold:
+                    if self.insideKeys:
+                        self.insideKeys = False
+                        self.targetParent.end_key_sequence()
+                      
+                    self.targetParent.append_sleep(elapsed)
+                    self.eventTime = now
+            
             if not self.insideKeys:
                 self.insideKeys = True
                 self.targetParent.start_key_sequence()
-                
+                    
             modifierCount = len(modifiers)
             
             if modifierCount > 1 or (modifierCount == 1 and Key.SHIFT not in modifiers) or \
@@ -467,14 +559,22 @@ class Recorder(KeyGrabber):
                 
             elif not key in MODIFIERS:
                 self.targetParent.append_key(key)
+            Gdk.threads_leave()  
         
     def handle_mouseclick(self, rootX, rootY, relX, relY, button, windowInfo):
         if self.recordMouse and self.__delayPassed():
+            Gdk.threads_enter()
             if self.insideKeys:
                 self.insideKeys = False
                 self.targetParent.end_key_sequence()
-                
+            if self.recordTiming:
+                now = time.time()
+                elapsed = now - self.eventTime
+                if elapsed > self.recordTimingThreshold:
+                    self.targetParent.append_sleep(elapsed)
+                    self.eventTime = now
             self.targetParent.append_mouseclick(relX, relY, button, windowInfo[0])
+            Gdk.threads_leave()  
 
 
 class WindowGrabber:

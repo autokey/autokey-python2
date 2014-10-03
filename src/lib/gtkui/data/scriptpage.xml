@@ -12,7 +12,7 @@
         <property name="can_focus">False</property>
         <property name="spacing">5</property>
         <child>
-          <object class="GtkLinkButton" id="linkButton">
+          <object class="GtkLinkButton" id="fileLinkButton">
             <property name="label" translatable="yes">(Unsaved)</property>
             <property name="use_action_appearance">False</property>
             <property name="visible">True</property>
@@ -60,8 +60,8 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkCheckButton" id="promptCheckbox">
-                        <property name="label" translatable="yes">Always prompt before executing this script</property>
+                      <object class="GtkCheckButton" id="promptCheckButton">
+                        <property name="label" translatable="yes">Always prompt before executing</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -78,7 +78,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="showInTrayCheckbox">
+                      <object class="GtkCheckButton" id="showInTrayCheckButton">
                         <property name="label" translatable="yes">Show in notification icon menu</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
@@ -96,6 +96,43 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkCheckButton" id="grabKeyboardCheckButton">
+                        <property name="label" translatable="yes">Grab keyboard during execution</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="xalign">0</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="on_modified" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="grabMouseCheckButton">
+                        <property name="label" translatable="yes">Grab mouse during execution</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="xalign">0</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="on_modified" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+
+                    <child>
                       <object class="GtkHSeparator" id="hseparator1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -104,7 +141,7 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="padding">10</property>
-                        <property name="position">2</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                   </object>

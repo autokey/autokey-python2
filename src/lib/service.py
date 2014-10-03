@@ -69,6 +69,7 @@ class Service:
         self.configManager = app.configManager
         ConfigManager.SETTINGS[SERVICE_RUNNING] = False
         self.mediator = None
+        self.exclusiveGrab = False
         self.app = app
         self.inputStack = []
         self.lastStackState = ''
@@ -79,6 +80,7 @@ class Service:
         self.mediator.interface.initialise()
         self.mediator.interface.start()
         self.mediator.start()
+        self.modifiers = []
         ConfigManager.SETTINGS[SERVICE_RUNNING] = True
         self.scriptRunner = ScriptRunner(self.mediator, self.app)
         self.phraseRunner = PhraseRunner(self)
@@ -101,7 +103,7 @@ class Service:
         if self.mediator is not None: self.mediator.shutdown()
         if save: save_config(self.configManager)
             
-    def handle_mouseclick(self, rootX, rootY, relX, relY, button, windowTitle):
+    def handle_mouseclick(self, rootX, rootY, relX, relY, button, windowInfo):
         logger.debug("Received mouse click - resetting buffer")        
         self.inputStack = []
         
@@ -112,15 +114,23 @@ class Service:
         # Clear last to prevent undo of previous phrase in unexpected places
         self.phraseRunner.clear_last()
         
-    def handle_keypress(self, rawKey, modifiers, key, windowName, windowClass):
+        # Call handle_keypress for possible button hotkeys
+        if button not in [1,2,3]:
+            rawKey = key = '<button{}>'.format(str(button))
+            self.handle_keypress(rawKey, self.modifiers, key, windowInfo[0], windowInfo[1], button)
+        
+    def handle_keypress(self, rawKey, modifiers, key, windowName, windowClass, is_button=None):
+        self.modifiers = modifiers
         logger.debug("Raw key: %r, modifiers: %r, Key: %s", rawKey, modifiers, key.encode("utf-8"))
         logger.debug("Window visible title: %r, Window class: %r" % (windowName, windowClass))
         self.configManager.lock.acquire()
         windowInfo = (windowName, windowClass)
         
-        # Always check global hotkeys
-        for hotkey in self.configManager.globalHotkeys:
-            hotkey.check_hotkey(modifiers, rawKey, windowInfo)
+        # Always check global hotkeys, unless in an exclusive_grab for setting them
+        # which can result in a match not releasing the grab.
+        if not self.exclusiveGrab:
+            for hotkey in self.configManager.globalHotkeys:
+                hotkey.check_hotkey(modifiers, rawKey, windowInfo)
         
         if self.__shouldProcess(windowInfo):
             itemMatch = None
@@ -160,7 +170,11 @@ class Service:
             if itemMatch is not None:
                 self.__tryReleaseLock()
                 self.__processItem(itemMatch)
-                
+            
+            
+            if is_button:
+                self.__tryReleaseLock()
+                return
                 
             ### --- end of hotkey processing --- ###
             
@@ -196,7 +210,9 @@ class Service:
                 logger.debug("Input stack at end of handle_keypress: %s", self.inputStack)
     
         self.__tryReleaseLock()
-    
+    def handle_error(self,error):
+        pass
+
     def __tryReleaseLock(self):     
         try:     
             self.configManager.lock.release()
@@ -327,7 +343,7 @@ class Service:
         """
         Return a boolean indicating whether we should take any action on the keypress
         """
-        return windowInfo[0] != "Set Abbreviations" and self.is_running()
+        return windowInfo[0] != "Set Abbreviations" and self.is_running() and not self.exclusiveGrab
     
     def __processItem(self, item, buffer=''):
         self.inputStack = []
@@ -342,9 +358,9 @@ class Service:
         
     def __haveMatch(self, data):
         folderMatch, itemMatches = data
-        if folder is not None:
+        if folderMatch is not None:
             return True
-        if len(items) > 0:
+        if len(itemMatches) > 0:
             return True
             
         return False
@@ -426,17 +442,26 @@ class ScriptRunner:
         self.error = ''
         self.scope = globals()
         self.scope["keyboard"]= scripting.Keyboard(mediator)
+        self.scope["k"]= scripting.Keyboard(mediator)
         self.scope["mouse"]= scripting.Mouse(mediator)
+        self.scope["m"]= scripting.Mouse(mediator)
         self.scope["system"] = scripting.System()
+        self.scope["s"] = scripting.System()
         self.scope["window"] = scripting.Window(mediator)
+        self.scope["w"] = scripting.Window(mediator)
         self.scope["engine"] = scripting.Engine(app.configManager, self)
+        self.scope["e"] = scripting.Engine(app.configManager, self)
 
         if common.USING_QT:
             self.scope["dialog"] = scripting.QtDialog()
+            self.scope["d"] = scripting.QtDialog()
             self.scope["clipboard"] = scripting.QtClipboard(app)
+            self.scope["c"] = scripting.QtClipboard(app)
         else:
             self.scope["dialog"] = scripting.GtkDialog()
+            self.scope["d"] = scripting.GtkDialog()
             self.scope["clipboard"] = scripting.GtkClipboard(app)
+            self.scope["c"] = scripting.GtkClipboard(app)
 
         self.engine = self.scope["engine"]
     
@@ -446,12 +471,16 @@ class ScriptRunner:
 
         scope = self.scope.copy()
         scope["store"] = script.store
-        
+        scope["s"] = script.store
+        code = script.code
         backspaces, stringAfter = script.process_buffer(buffer)
         self.mediator.send_backspace(backspaces)
-
+        if script.grabMouse:
+            code = "mouse.grab_mouse()\n" + code + "\nmouse.ungrab_mouse()\n" 
+        if script.grabKeyboard:
+            code = "keyboard.grab_keyboard()\n" + code + "\nkeyboard.ungrab_keyboard()\n" 
         try:
-            exec script.code in scope
+            exec code in scope
         except Exception, e:
             logger.exception("Script error")
             

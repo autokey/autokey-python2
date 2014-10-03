@@ -126,7 +126,7 @@ class Notifier:
         menu.popup(None, None, None, None, button, activate_time)
         
     def on_enable_toggled(self, widget, data=None):
-        if widget.active:
+        if widget.get_active():
             self.app.unpause_service()
         else:
             self.app.pause_service()
@@ -154,10 +154,10 @@ class Notifier:
         
     def show_notify(self, message, iconName):
         Gdk.threads_enter()
-        n = Notify.Notification.new("AutoKey", message, iconName)
+        n = Notify.Notification.new("AutoKey", message, icon=iconName)
         n.set_urgency(Notify.Urgency.LOW)
-        if ConfigManager.SETTINGS[SHOW_TRAY_ICON]:
-            n.attach_to_status_icon(self.icon)
+        #if ConfigManager.SETTINGS[SHOW_TRAY_ICON]:
+            # n.attach_to_status_icon(self.icon) # https://bugs.launchpad.net/ubuntu/+source/notify-python/+bug/86010
         n.show()
         Gdk.threads_leave()
         

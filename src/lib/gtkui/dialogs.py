@@ -321,7 +321,6 @@ class HotkeySettingsDialog(DialogBase):
         self.metaButton = builder.get_object("metaButton")
         self.setButton = builder.get_object("setButton")
         self.keyLabel = builder.get_object("keyLabel")
-        
         DialogBase.__init__(self)
         
     def load(self, item):
@@ -357,7 +356,6 @@ class HotkeySettingsDialog(DialogBase):
             key = self.REVERSE_KEY_MAP[keyText]
         else:
             key = keyText
-
         assert key != None, "Attempt to set hotkey with no key"
         item.set_hotkey(modifiers, key)
         
@@ -385,7 +383,6 @@ class HotkeySettingsDialog(DialogBase):
         self.superButton.set_active(iomediator.Key.SUPER in modifiers)
         self.hyperButton.set_active(iomediator.Key.HYPER in modifiers)
         self.metaButton.set_active(iomediator.Key.META in modifiers)
-        
         self.setButton.set_sensitive(True)
         Gdk.threads_leave()
 
@@ -414,7 +411,8 @@ class HotkeySettingsDialog(DialogBase):
         return modifiers
         
     def _setKeyLabel(self, key):
-        self.keyLabel.set_text(_("Key: ") + key)
+        if key:
+            self.keyLabel.set_text(_("Key: ") + key)
         
     def valid(self):
         if not validate(self.key is not None, _("You must specify a key for the hotkey."),
@@ -424,7 +422,7 @@ class HotkeySettingsDialog(DialogBase):
         
     def on_setButton_pressed(self, widget, data=None):
         self.setButton.set_sensitive(False)
-        self.keyLabel.set_text(_("Press a key..."))
+        self.keyLabel.set_text(_("Press a key or button..."))
         self.grabber = iomediator.KeyGrabber(self)
         self.grabber.start()
         
@@ -462,7 +460,6 @@ class GlobalHotkeyDialog(HotkeySettingsDialog):
             key = self.REVERSE_KEY_MAP[keyText]
         else:
             key = keyText
-
         assert key != None, "Attempt to set hotkey with no key"
         item.set_hotkey(modifiers, key)
         
@@ -595,30 +592,35 @@ class DetectDialog(DialogBase):
         
 class RecordDialog(DialogBase):
     
-    def __init__(self, parent, closure):
+    def __init__(self, parent, topwin, closure):
         self.closure = closure
         builder = configwindow.get_ui("recorddialog.xml")
         self.ui = builder.get_object("recorddialog")
         builder.connect_signals(self)
-        self.ui.set_transient_for(parent)
+        self.ui.set_transient_for(topwin)
         
-        self.keyboardButton = builder.get_object("keyboardButton")
-        self.mouseButton = builder.get_object("mouseButton")
-        self.spinButton = builder.get_object("spinButton")
+        self.keyboardCheckButton = builder.get_object("keyboardCheckButton")
+        self.mouseCheckButton = builder.get_object("mouseCheckButton")
+        self.timingCheckButton = builder.get_object("timingCheckButton")
+        self.delaySpinButton = builder.get_object("delaySpinButton")
+        self.delaySpinButton.set_value(2)
         
         DialogBase.__init__(self)
         
     def get_record_keyboard(self):
-        return self.keyboardButton.get_active()
+        return self.keyboardCheckButton.get_active()
         
     def get_record_mouse(self):
-        return self.mouseButton.get_active()
+        return self.mouseCheckButton.get_active()
+
+    def get_record_timing(self):
+        return self.timingCheckButton.get_active()
 
     def get_delay(self):
-        return self.spinButton.get_value_as_int()
+        return self.delaySpinButton.get_value_as_int()
         
     def on_response(self, widget, responseId):
-        self.closure(responseId, self.get_record_keyboard(), self.get_record_mouse(), self.get_delay())
+        self.closure(responseId, self.get_record_keyboard(), self.get_record_mouse(), self.get_record_timing(), self.get_delay())
         
     def on_cancel(self, widget, data=None):
         self.ui.response(Gtk.ResponseType.CANCEL)
