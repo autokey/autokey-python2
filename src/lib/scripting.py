@@ -254,8 +254,16 @@ class Store(dict):
         
         Usage: C{store.get_value(key)}
         """
-        return self[key]        
+        return self[key]
+    
+    def check_key(self,key):
+        """
+        See if a key exists
         
+        Usage: C{store.check_key(key)}
+        """
+        return key in self
+                
     def remove_value(self, key):
         """
         Remove a value
@@ -281,6 +289,14 @@ class Store(dict):
         Usage: C{store.get_global_value(key)}
         """
         return self.GLOBALS[key]        
+
+    def check_global_key(self,key):
+        """
+        See if a global key exists
+        
+        Usage: C{store.check_global_key(key)}
+        """
+        return key in self.GLOBALS
         
     def remove_global_value(self, key):
         """
