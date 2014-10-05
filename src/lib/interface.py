@@ -113,8 +113,6 @@ class XInterfaceBase(threading.Thread):
                 break
     
             try:
-                #if method and method.func_name:
-                    #logger.debug("Executing X event func " + method.func_name)
                 method(*args)
             except Exception, e:
                 logger.exception("Error in X event loop thread")
@@ -745,22 +743,21 @@ class XInterfaceBase(threading.Thread):
         keyCode = self.__lookupKeyCode(keyName)
         xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
 
-    def send_modified_key(self, keyName, modifiers):
+    def send_modified_key(self, keyName, modifiers, method='event'):
         """
         Send a modified key (e.g. when emulating a hotkey)
         """
-        self.__enqueue(self.__sendModifiedKey, keyName, modifiers)
+        self.__enqueue(self.__sendModifiedKey, keyName, modifiers, method)
         
-    def __sendModifiedKey(self, keyName, modifiers):
-        logger.debug("Send modified key: modifiers: %s key: %s", modifiers, keyName)
+    def __sendModifiedKey(self, keyName, modifiers, method='event'):
         try:
             mask = 0
             for mod in modifiers:
                 mask |= self.modMasks[mod]
             keyCode = self.__lookupKeyCode(keyName)
-            for mod in modifiers: self.__pressKey(mod)
-            self.__sendKeyCode(keyCode, mask)
-            for mod in modifiers: self.__releaseKey(mod)
+            for mod in modifiers: self.__pressKey(mod, method)
+            self.__sendKeyCode(keyCode, mask, method=method)
+            for mod in modifiers: self.__releaseKey(mod, method)
         except Exception, e:
             logger.warn("Error sending modified key %r %r: %s", modifiers, keyName, str(e))
 
@@ -811,13 +808,13 @@ class XInterfaceBase(threading.Thread):
         self.lastChars = []
 
     def press_key(self, keyName, method='event'):
-        self.__enqueue(self.__pressKey, keyName)
+        self.__enqueue(self.__pressKey, keyName, method)
         
     def __pressKey(self, keyName, method='event'):
         self.__sendKeyPressEvent(self.__lookupKeyCode(keyName), 0, None, method)
-
+        
     def release_key(self, keyName, method='event'):
-        self.__enqueue(self.__releaseKey, keyName)
+        self.__enqueue(self.__releaseKey, keyName, method)
         
     def __releaseKey(self, keyName, method='event'):
         self.__sendKeyReleaseEvent(self.__lookupKeyCode(keyName), 0, None, method)
@@ -904,7 +901,6 @@ class XInterfaceBase(threading.Thread):
         return None
 
     def __sendKeyCode(self, keyCode, modifiers=0, theWindow=None, method='event'):
-        logger.debug("__sendKeyCode(%r,%r,%r,%r)", keyCode,modifiers,theWindow,method)
         if ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND] or self.__enableQT4Workaround:
             self.__doQT4Workaround(keyCode)
         self.__sendKeyPressEvent(keyCode, modifiers, theWindow, method)
@@ -954,9 +950,6 @@ class XInterfaceBase(threading.Thread):
                                   )
             focus.send_event(keyEvent)
         else:
-            if modifiers:
-                for mod in modifiers:
-                    xtest.fake_input(focus, X.KeyPress, mod)
             xtest.fake_input(focus, X.KeyPress, keyCode)
 
     def __sendKeyReleaseEvent(self, keyCode, modifiers, theWindow=None, method='event'):
@@ -982,10 +975,7 @@ class XInterfaceBase(threading.Thread):
             focus.send_event(keyEvent)
         else:
             xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
-            if modifiers:
-                for mod in modifiers:
-                    xtest.fake_input(self.rootWindow, X.KeyRelease, mod)
-            
+
     def __lookupKeyCode(self, char):
         if char in AK_TO_XK_MAP:
             return self.localDisplay.keysym_to_keycode(AK_TO_XK_MAP[char])

@@ -30,7 +30,7 @@ class Keyboard:
     def __init__(self, mediator):
         self.mediator = mediator
         self.interval = 0.0
-        self.method = 'send_event'
+        self.method = 'event'
 
     def set_interval(self,interval=0.0): 
         """

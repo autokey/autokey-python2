@@ -276,17 +276,17 @@ class IoMediator(threading.Thread):
                     if len(modifiers) > 0:
                         # Modifiers ready for application - send modified key
                         if k.is_key(section):
-                            self.interface.send_modified_key(section, modifiers)
+                            self.interface.send_modified_key(section, modifiers, method)
                             modifiers = []
                         else:
-                            self.interface.send_modified_key(section[0], modifiers)
+                            self.interface.send_modified_key(section[0], modifiers, method)
                             if len(section) > 1:
                                 self.interface.send_string(section[1:], interval, method)
                             modifiers = []
                     else:
                         # Normal string/key operation                    
                         if k.is_key(section):
-                            self.interface.send_key(section)
+                            self.interface.send_key(section, method)
                         else:
                             self.interface.send_string(section, interval, method)
                             
