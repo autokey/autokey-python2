@@ -672,29 +672,45 @@ class XInterfaceBase(threading.Thread):
                 keyCode, offset = self.__findUsableKeycode(keyCodeList)
                 if keyCode is not None:
                     if offset == 0:
-                        self.__sendKeyCode(keyCode, theWindow=focus, method=method)
+                        self.__sendKeyCode(keyCode, 0, focus, interval, method)
                     if offset == 1:
                         self.__pressKey(Key.SHIFT, method)
-                        self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, method)
+                        if interval:
+                            self.__sendSleep(interval)
+                        self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, interval, method)
+                        if interval:
+                            self.__sendSleep(interval)
                         self.__releaseKey(Key.SHIFT, method)
                     if offset == 4:
                         self.__pressKey(Key.ALT_GR, method)
-                        self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR], focus, method)
+                        if interval:
+                            self.__sendSleep(interval)
+                        self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR], focus, interval, method)
+                        if interval:
+                            self.__sendSleep(interval)
                         self.__releaseKey(Key.ALT_GR, method)
                     if offset == 5:
                         self.__pressKey(Key.ALT_GR, method)
                         self.__pressKey(Key.SHIFT, method)
-                        self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR]|self.modMasks[Key.SHIFT], focus, method)
+                        if interval:
+                            self.__sendSleep(interval)
+                        self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR]|self.modMasks[Key.SHIFT], focus, interval, method)
+                        if interval:
+                            self.__sendSleep(interval)
                         self.__releaseKey(Key.SHIFT, method)
                         self.__releaseKey(Key.ALT_GR, method)
 
                 elif char in self.remappedChars:
                     keyCode, offset = self.remappedChars[char]
                     if offset == 0:
-                        self.__sendKeyCode(keyCode, theWindow=focus, method=method)
+                        self.__sendKeyCode(keyCode, 0, focus, interval, method)
                     if offset == 1:
                         self.__pressKey(Key.SHIFT, method)
-                        self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, method)
+                        if interval:
+                            self.__sendSleep(interval)
+                        self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, interval, method)
+                        if interval:
+                            self.__sendSleep(interval)
                         self.__releaseKey(Key.SHIFT, method)
                 else:
                     logger.warn("Unable to send character %r", char)
@@ -900,10 +916,12 @@ class XInterfaceBase(threading.Thread):
 
         return None
 
-    def __sendKeyCode(self, keyCode, modifiers=0, theWindow=None, method='event'):
+    def __sendKeyCode(self, keyCode, modifiers=0, theWindow=None, interval=0, method='event'):
         if ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND] or self.__enableQT4Workaround:
             self.__doQT4Workaround(keyCode)
         self.__sendKeyPressEvent(keyCode, modifiers, theWindow, method)
+        if interval:
+            self.__sendSleep(interval)
         self.__sendKeyReleaseEvent(keyCode, modifiers, theWindow, method)
 
     def __checkWorkaroundNeeded(self):

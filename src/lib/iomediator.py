@@ -277,9 +277,13 @@ class IoMediator(threading.Thread):
                         # Modifiers ready for application - send modified key
                         if k.is_key(section):
                             self.interface.send_modified_key(section, modifiers, method)
+                            if interval:
+                                self.interface.send_sleep(interval)
                             modifiers = []
                         else:
                             self.interface.send_modified_key(section[0], modifiers, method)
+                            if interval:
+                                self.interface.send_sleep(interval)
                             if len(section) > 1:
                                 self.interface.send_string(section[1:], interval, method)
                             modifiers = []
@@ -287,6 +291,8 @@ class IoMediator(threading.Thread):
                         # Normal string/key operation                    
                         if k.is_key(section):
                             self.interface.send_key(section, method)
+                            if interval:
+                                self.interface.send_sleep(interval)
                         else:
                             self.interface.send_string(section, interval, method)
                             
@@ -350,6 +356,7 @@ class IoMediator(threading.Thread):
         """
         Sends the given number of backspace key presses.
         """
+        _logger.debug("Send_backspace %r", count)
         for i in range(count):
             self.interface.send_key(Key.BACKSPACE)
         
