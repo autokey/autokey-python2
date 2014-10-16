@@ -474,7 +474,7 @@ class ScriptRunner:
         scope["s"] = script.store
         code = script.code
         backspaces, stringAfter = script.process_buffer(buffer)
-        self.mediator.send_backspace(backspaces)
+        #self.mediator.send_backspace(backspaces)
         if script.grabMouse:
             code = "mouse.grab_mouse()\n" + code + "\nmouse.ungrab_mouse()\n" 
         if script.grabKeyboard:
@@ -497,4 +497,5 @@ class ScriptRunner:
     def run_subscript(self, script):
         scope = self.scope.copy()
         scope["store"] = script.store
+        scope["s"] = script.store
         exec script.code in scope

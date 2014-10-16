@@ -264,7 +264,7 @@ class IoMediator(threading.Thread):
         string = string.replace("\t", "<tab>")
         
         _logger.debug("Send via %r interface",method)
-        self.__clearModifiers()
+        self.__clearModifiers(interval,method)
         modifiers = []            
         for section in KEY_SPLIT_RE.split(string):
             if len(section) > 0:
@@ -276,27 +276,21 @@ class IoMediator(threading.Thread):
                     if len(modifiers) > 0:
                         # Modifiers ready for application - send modified key
                         if k.is_key(section):
-                            self.interface.send_modified_key(section, modifiers, method)
-                            if interval:
-                                self.interface.send_sleep(interval)
+                            self.interface.send_modified_key(section, modifiers, interval, method)
                             modifiers = []
                         else:
-                            self.interface.send_modified_key(section[0], modifiers, method)
-                            if interval:
-                                self.interface.send_sleep(interval)
+                            self.interface.send_modified_key(section[0], modifiers, interval, method)
                             if len(section) > 1:
                                 self.interface.send_string(section[1:], interval, method)
                             modifiers = []
                     else:
                         # Normal string/key operation                    
                         if k.is_key(section):
-                            self.interface.send_key(section, method)
-                            if interval:
-                                self.interface.send_sleep(interval)
+                            self.interface.send_key(section, interval, method)
                         else:
                             self.interface.send_string(section, interval, method)
                             
-        self.__reapplyModifiers()
+        self.__reapplyModifiers(interval,method)
         
     def paste_string(self, string, pasteCommand):
         if len(string) > 0:
@@ -315,24 +309,21 @@ class IoMediator(threading.Thread):
                 
         self.send_backspace(backspaces)
         
-    def send_key(self, keyName, method='event'):
+    def send_key(self, keyName, interval=0, method='event'):
         keyName = keyName.replace("\n", "<enter>")
-        if method == 'event':
-            self.interface.send_key(keyName)
-        else:
-            self.interface.fake_keypress(keyName)
+        self.interface.send_key(keyName,interval,method)
+    
+    def press_key(self, keyName, interval=0, method='event'):
+        keyName = keyName.replace("\n", "<enter>")
+        self.interface.press_key(keyName,interval,method)
         
-    def press_key(self, keyName):
+    def release_key(self, keyName,interval=0,method='event'):
         keyName = keyName.replace("\n", "<enter>")
-        self.interface.fake_keydown(keyName)
-        
-    def release_key(self, keyName):
-        keyName = keyName.replace("\n", "<enter>")
-        self.interface.fake_keyup(keyName)                
+        self.interface.release_key(keyName,interval,method)
 
-    def fake_keypress(self, keyName):
+    def fake_keypress(self, keyName, interval=0):
         keyName = keyName.replace("\n", "<enter>")
-        self.interface.fake_keypress(keyName)
+        self.interface.send_key(keyName,interval,'xtest')
 
     def send_left(self, count):
         """
@@ -356,8 +347,8 @@ class IoMediator(threading.Thread):
         """
         Sends the given number of backspace key presses.
         """
-        _logger.debug("Send_backspace %r", count)
         for i in range(count):
+            _logger.debug("Send_backspace %r", count)
             self.interface.send_key(Key.BACKSPACE)
         
     def send_mouse_click(self, x, y, button, relative):
@@ -371,17 +362,19 @@ class IoMediator(threading.Thread):
         
     # Utility methods ----
     
-    def __clearModifiers(self):
+    def __clearModifiers(self, interval=0, method='event'):
         self.releasedModifiers = []
         
         for modifier in self.modifiers.keys():
             if self.modifiers[modifier] and not modifier in (Key.CAPSLOCK, Key.NUMLOCK):
                 self.releasedModifiers.append(modifier)
-                self.interface.release_key(modifier)
+                _logger.debug("clearModifier %r", modifier)
+                self.interface.release_key(modifier, interval, method)
         
-    def __reapplyModifiers(self):
+    def __reapplyModifiers(self, interval=0, method='event'):
         for modifier in self.releasedModifiers:
-            self.interface.press_key(modifier)
+            _logger.debug("reapplyModifier %r", modifier)
+            self.interface.press_key(modifier, interval, method)
             
     def __getModifiersOn(self):
         modifiers = []
@@ -475,11 +468,9 @@ class Recorder(KeyGrabber):
     
     def __init__(self, parent):
         KeyGrabber.__init__(self, parent)
-        self.insideKeys = self.delayFinished = False
-        self.startTime = self.eventTime = self.delay = 0.0
-        self.withGrab = False
+        self.insideKeys = self.delayFinished = self.withGrab = False
+        self.startTime = self.eventTime = self.lastRecordTime = self.delay = 0.0
         
-        # Minimum timing interval to generate a sleep for
         self.recordTimingThreshold = ConfigManager.SETTINGS[RECORD_TIMING_THRESHOLD]
         
     def start(self, delay):
@@ -526,12 +517,10 @@ class Recorder(KeyGrabber):
         self.recordTiming = doIt
         
     def __delayPassed(self):
-        if not self.delayFinished:
-            now = time.time()
-            delta = datetime.datetime.utcfromtimestamp(now - self.startTime)
-            self.delayFinished = (delta.second > self.delay)
-        if self.delayFinished:
-            self.eventTime = time.time()
+        self.eventTime = time.time()
+        if not self.delayFinished and self.eventTime > (self.startTime + self.delay):
+            self.delayFinished = True
+            self.lastRecordTime = self.eventTime
         return self.delayFinished
 
     def handle_error(self,error):
@@ -544,15 +533,13 @@ class Recorder(KeyGrabber):
         if self.recordKeyboard and self.__delayPassed():
             Gdk.threads_enter()
             if self.recordTiming:
-                now = time.time()
-                elapsed = now - self.eventTime
+                elapsed = self.eventTime - self.lastRecordTime
                 if elapsed > self.recordTimingThreshold:
                     if self.insideKeys:
                         self.insideKeys = False
                         self.targetParent.end_key_sequence()
-                      
                     self.targetParent.append_sleep(elapsed)
-                    self.eventTime = now
+                    self.lastRecordTime = self.eventTime
             
             if not self.insideKeys:
                 self.insideKeys = True
@@ -576,11 +563,10 @@ class Recorder(KeyGrabber):
                 self.insideKeys = False
                 self.targetParent.end_key_sequence()
             if self.recordTiming:
-                now = time.time()
-                elapsed = now - self.eventTime
+                elapsed = self.eventTime - self.lastRecordTime
                 if elapsed > self.recordTimingThreshold:
                     self.targetParent.append_sleep(elapsed)
-                    self.eventTime = now
+                    self.lastRecordTime = self.eventTime
             self.targetParent.append_mouseclick(relX, relY, button, windowInfo[0])
             Gdk.threads_leave()  
 

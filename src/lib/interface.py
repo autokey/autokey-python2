@@ -125,7 +125,6 @@ class XInterfaceBase(threading.Thread):
     def on_keys_changed(self, data=None):
         if not self.__ignoreRemap:
             logger.debug("Recorded keymap change event")
-            self.__ignoreRemap = True
             time.sleep(0.2)
             self.__enqueue(self.__ungrabAllHotkeys)
             self.__enqueue(self.__delayedInitMappings)
@@ -561,23 +560,23 @@ class XInterfaceBase(threading.Thread):
             Gdk.threads_leave()
 
     def begin_send(self):
-        self.__enqueue(self.__grab_keyboard)
+        self.__enqueue(self.__grabKeyboard)
 
     def finish_send(self):
         self.__enqueue(self.__ungrabKeyboard)
 
     def grab_keyboard(self):
-        self.__enqueue(self.__grab_keyboard)
+        self.__enqueue(self.__grabKeyboard)
 
     def grab_pointer(self):
-        self.__enqueue(self.__grab_pointer)
+        self.__enqueue(self.__grabPointer)
 
-    def __grab_pointer(self):
+    def __grabPointer(self):
         focus = self.localDisplay.get_input_focus().focus
         focus.grab_pointer(True, X.PointerMotionMask, X.GrabModeAsync, X.GrabModeAsync, X.CurrentTime)
         self.localDisplay.flush()
         
-    def __grab_keyboard(self):
+    def __grabKeyboard(self):
         focus = self.localDisplay.get_input_focus().focus
         focus.grab_keyboard(True, X.GrabModeAsync, X.GrabModeAsync, X.CurrentTime)
         self.localDisplay.flush()
@@ -602,9 +601,16 @@ class XInterfaceBase(threading.Thread):
                 return code, offset
 
         return None, None
-
+    def __enableRemap(self,enable=True):
+        if enable:
+            self.__ignoreRemap = False
+        else:
+            self.__ignoreRemap = True
+            
     def send_string(self, string, interval=0.0, method='event'):
+        self.__enqueue(self.__enableRemap, False)
         self.__enqueue(self.__sendString, string, interval, method)
+        self.__enqueue(self.__enableRemap, True)
         
     def __sendString(self, string, interval=0.0, method='event'):
         """
@@ -662,11 +668,12 @@ class XInterfaceBase(threading.Thread):
 
             mapping = [tuple(l) for l in mapping]
             self.localDisplay.change_keyboard_mapping(firstCode, mapping)
-            self.localDisplay.flush()
+            self.localDisplay.sync()
 
         focus = self.localDisplay.get_input_focus().focus
 
         for char in string:
+            logger.debug("Sending char: %r", char)
             try:
                 keyCodeList = self.localDisplay.keysym_to_keycodes(ord(char))
                 keyCode, offset = self.__findUsableKeycode(keyCodeList)
@@ -674,106 +681,92 @@ class XInterfaceBase(threading.Thread):
                     if offset == 0:
                         self.__sendKeyCode(keyCode, 0, focus, interval, method)
                     if offset == 1:
-                        self.__pressKey(Key.SHIFT, method)
-                        if interval:
-                            self.__sendSleep(interval)
+                        self.__pressKey(Key.SHIFT, interval, method)
                         self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, interval, method)
-                        if interval:
-                            self.__sendSleep(interval)
-                        self.__releaseKey(Key.SHIFT, method)
+                        self.__releaseKey(Key.SHIFT, interval, method)
                     if offset == 4:
-                        self.__pressKey(Key.ALT_GR, method)
-                        if interval:
-                            self.__sendSleep(interval)
+                        self.__pressKey(Key.ALT_GR, interval, method)
                         self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR], focus, interval, method)
-                        if interval:
-                            self.__sendSleep(interval)
-                        self.__releaseKey(Key.ALT_GR, method)
+                        self.__releaseKey(Key.ALT_GR, interval, method)
                     if offset == 5:
-                        self.__pressKey(Key.ALT_GR, method)
-                        self.__pressKey(Key.SHIFT, method)
-                        if interval:
-                            self.__sendSleep(interval)
+                        self.__pressKey(Key.ALT_GR, interval, method)
+                        self.__pressKey(Key.SHIFT, interval, method)
                         self.__sendKeyCode(keyCode, self.modMasks[Key.ALT_GR]|self.modMasks[Key.SHIFT], focus, interval, method)
-                        if interval:
-                            self.__sendSleep(interval)
-                        self.__releaseKey(Key.SHIFT, method)
-                        self.__releaseKey(Key.ALT_GR, method)
+                        self.__releaseKey(Key.SHIFT, interval, method)
+                        self.__releaseKey(Key.ALT_GR, interval, method)
 
                 elif char in self.remappedChars:
                     keyCode, offset = self.remappedChars[char]
                     if offset == 0:
                         self.__sendKeyCode(keyCode, 0, focus, interval, method)
                     if offset == 1:
-                        self.__pressKey(Key.SHIFT, method)
-                        if interval:
-                            self.__sendSleep(interval)
+                        self.__pressKey(Key.SHIFT, interval, method)
                         self.__sendKeyCode(keyCode, self.modMasks[Key.SHIFT], focus, interval, method)
-                        if interval:
-                            self.__sendSleep(interval)
-                        self.__releaseKey(Key.SHIFT, method)
+                        self.__releaseKey(Key.SHIFT, interval, method)
                 else:
                     logger.warn("Unable to send character %r", char)
             except Exception, e:
                 logger.exception("Error sending char %r: %s", char, str(e))
-            if interval:
-                self.__sendSleep(interval)
-        self.__ignoreRemap = False
+        #self.__ignoreRemap = False
 
     def send_sleep(self,interval):
         self.__enqueue(self.__sendSleep,interval)
         
-    def __sendSleep(self,interval):
+    def __sendSleep(self,interval=0):
         logger.debug("Send sleep: [%f]", interval)
         time.sleep(interval)
         
-    def send_key(self, keyName, method='event'):
+    def send_key(self, keyName, interval=0, method='event'):
         """
         Send a specific non-printing key, eg Up, Left, etc
         """
-        self.__enqueue(self.__sendKey, keyName, method)
+        self.__enqueue(self.__sendKey, keyName, interval, method)
         
-    def __sendKey(self, keyName, method='event'):
+    def __sendKey(self, keyName, interval=0, method='event'):
         logger.debug("Send special key: [%r]", keyName)
-        self.__sendKeyCode(self.__lookupKeyCode(keyName), method=method)
+        self.__sendKeyCode(self.__lookupKeyCode(keyName), 0, None, interval, method)
 
-    def fake_keypress(self, keyName):
+    def fake_keypress(self, keyName, interval=0):
          self.__enqueue(self.__fakeKeypress, keyName)
          
-    def __fakeKeypress(self, keyName):        
+    def __fakeKeypress(self, keyName, interval=0):        
         keyCode = self.__lookupKeyCode(keyName)
         xtest.fake_input(self.rootWindow, X.KeyPress, keyCode)
+        if interval: self.__sendSleep(interval)
         xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
+        if interval: self.__sendSleep(interval)
 
-    def fake_keydown(self, keyName):
-        self.__enqueue(self.__fakeKeydown, keyName)
+    def fake_keydown(self, keyName, interval=0):
+        self.__enqueue(self.__fakeKeydown, keyName, interval)
         
-    def __fakeKeydown(self, keyName):
+    def __fakeKeydown(self, keyName, interval=0):
         keyCode = self.__lookupKeyCode(keyName)
         xtest.fake_input(self.rootWindow, X.KeyPress, keyCode)
+        if interval: self.__sendSleep(interval)
 
-    def fake_keyup(self, keyName):
-        self.__enqueue(self.__fakeKeyup, keyName)
+    def fake_keyup(self, keyName, interval=0):
+        self.__enqueue(self.__fakeKeyup, keyName, interval)
         
-    def __fakeKeyup(self, keyName):
+    def __fakeKeyup(self, keyName, interval=0):
         keyCode = self.__lookupKeyCode(keyName)
         xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
+        if interval: self.__sendSleep(interval)
 
-    def send_modified_key(self, keyName, modifiers, method='event'):
+    def send_modified_key(self, keyName, modifiers, interval=0, method='event'):
         """
         Send a modified key (e.g. when emulating a hotkey)
         """
-        self.__enqueue(self.__sendModifiedKey, keyName, modifiers, method)
+        self.__enqueue(self.__sendModifiedKey, keyName, modifiers, interval, method)
         
-    def __sendModifiedKey(self, keyName, modifiers, method='event'):
+    def __sendModifiedKey(self, keyName, modifiers, interval=0, method='event'):
         try:
             mask = 0
             for mod in modifiers:
                 mask |= self.modMasks[mod]
             keyCode = self.__lookupKeyCode(keyName)
-            for mod in modifiers: self.__pressKey(mod, method)
-            self.__sendKeyCode(keyCode, mask, method=method)
-            for mod in modifiers: self.__releaseKey(mod, method)
+            for mod in modifiers: self.__pressKey(mod, interval, method)
+            self.__sendKeyCode(keyCode, mask, None, interval, method)
+            for mod in modifiers: self.__releaseKey(mod, interval, method)
         except Exception, e:
             logger.warn("Error sending modified key %r %r: %s", modifiers, keyName, str(e))
 
@@ -823,17 +816,19 @@ class XInterfaceBase(threading.Thread):
         self.localDisplay.flush()
         self.lastChars = []
 
-    def press_key(self, keyName, method='event'):
-        self.__enqueue(self.__pressKey, keyName, method)
+    def press_key(self, keyName, interval=0, method='event'):
+        self.__enqueue(self.__pressKey, keyName, interval, method)
         
-    def __pressKey(self, keyName, method='event'):
+    def __pressKey(self, keyName, interval=0, method='event'):
         self.__sendKeyPressEvent(self.__lookupKeyCode(keyName), 0, None, method)
+        if interval: self.__sendSleep(interval)
         
-    def release_key(self, keyName, method='event'):
-        self.__enqueue(self.__releaseKey, keyName, method)
+    def release_key(self, keyName, interval=0, method='event'):
+        self.__enqueue(self.__releaseKey, keyName, interval, method)
         
-    def __releaseKey(self, keyName, method='event'):
+    def __releaseKey(self, keyName, interval=0, method='event'):
         self.__sendKeyReleaseEvent(self.__lookupKeyCode(keyName), 0, None, method)
+        if interval: self.__sendSleep(interval)
 
     def __flushEvents(self):
         while True:
@@ -920,9 +915,9 @@ class XInterfaceBase(threading.Thread):
         if ConfigManager.SETTINGS[ENABLE_QT4_WORKAROUND] or self.__enableQT4Workaround:
             self.__doQT4Workaround(keyCode)
         self.__sendKeyPressEvent(keyCode, modifiers, theWindow, method)
-        if interval:
-            self.__sendSleep(interval)
+        if interval: self.__sendSleep(interval)
         self.__sendKeyReleaseEvent(keyCode, modifiers, theWindow, method)
+        if interval: self.__sendSleep(interval)
 
     def __checkWorkaroundNeeded(self):
         focus = self.localDisplay.get_input_focus().focus
@@ -969,6 +964,7 @@ class XInterfaceBase(threading.Thread):
             focus.send_event(keyEvent)
         else:
             xtest.fake_input(focus, X.KeyPress, keyCode)
+            #self.localDisplay.sync()
 
     def __sendKeyReleaseEvent(self, keyCode, modifiers, theWindow=None, method='event'):
         logger.debug("__sendKeyReleaseEvent(%r,%r,%r,%r)", keyCode,modifiers,theWindow,method)
@@ -992,7 +988,8 @@ class XInterfaceBase(threading.Thread):
                                   )
             focus.send_event(keyEvent)
         else:
-            xtest.fake_input(self.rootWindow, X.KeyRelease, keyCode)
+            xtest.fake_input(focus, X.KeyRelease, keyCode)
+            #self.localDisplay.sync()
 
     def __lookupKeyCode(self, char):
         if char in AK_TO_XK_MAP:
