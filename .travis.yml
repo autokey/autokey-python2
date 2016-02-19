@@ -1,4 +1,5 @@
 language: python
+sudo: required
 python:
   - "2.6"
   - "2.7"
@@ -11,4 +12,4 @@ python:
 os:
   - linux
 #  - osx
-install: "python setup.py install"
+install: "sudo python setup.py install"
