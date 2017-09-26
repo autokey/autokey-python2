@@ -142,35 +142,33 @@ class Service:
                     break
 
             if itemMatch is not None:
+                logging.info("match found checking hotkeys.")
                 if not itemMatch.prompt:
                     logger.info("Matched hotkey phrase/script with prompt=False")
                 else:
                     logger.info("Matched hotkey phrase/script with prompt=True")
-                    #menu = PopupMenu(self, [], [itemMatch])
                     menu = ([], [itemMatch])
-                    
             else:
                 logger.debug("No phrase/script matched hotkey")
                 for folder in self.configManager.hotKeyFolders:
+                    logging.debug("folder='%s'", folder)
                     if folder.check_hotkey(modifiers, rawKey, windowInfo):
-                        #menu = PopupMenu(self, [folder], [])
                         menu = ([folder], [])
 
             
             if menu is not None:
                 logger.debug("Folder matched hotkey - showing menu")
                 if self.lastMenu is not None:
-                    #self.lastMenu.remove_from_desktop()
                     self.app.hide_menu()
                 self.lastStackState = ''
                 self.lastMenu = menu
-                #self.lastMenu.show_on_desktop()
                 self.app.show_popup_menu(*menu)
             
             if itemMatch is not None:
                 self.__tryReleaseLock()
                 self.__processItem(itemMatch)
-            
+            else:
+                logging.debug("itemMatch is None.")
             
             if is_button:
                 self.__tryReleaseLock()
@@ -317,7 +315,9 @@ class Service:
         folderMatches = []
         
         for item in items:
+            logging.debug("Checking item(%s%s)", item, item.abbreviations)
             if item.check_input(buffer, windowInfo):
+                logging.debug("input match")
                 if not item.prompt and immediate:
                     return (item, None)
                 else:
@@ -346,12 +346,15 @@ class Service:
         return windowInfo[0] != "Set Abbreviations" and self.is_running() and not self.exclusiveGrab
     
     def __processItem(self, item, buffer=''):
+        logging.info("Item found processing state(item=%s; buffer=%s", item, buffer)
         self.inputStack = []
         self.lastStackState = ''
         
         if isinstance(item, model.Phrase):
+            logging.info("item is instance of model.phrase")
             self.phraseRunner.execute(item, buffer)
         else:
+            logging.info("item is NOT instance of model.phrase")
             self.scriptRunner.execute(item, buffer)
         
 
@@ -393,6 +396,7 @@ class PhraseRunner:
     @threaded
     #@synchronized(iomediator.SEND_LOCK)
     def execute(self, phrase, buffer=''):
+        logging.debug("Executing Phrase(%s)", phrase)
         mediator = self.service.mediator
         mediator.interface.begin_send()
         
@@ -474,7 +478,7 @@ class ScriptRunner:
         scope["s"] = script.store
         code = script.code
         backspaces, stringAfter = script.process_buffer(buffer)
-        #self.mediator.send_backspace(backspaces)
+        self.mediator.send_backspace(backspaces)
         if script.grabMouse:
             code = "mouse.grab_mouse()\n" + code + "\nmouse.ungrab_mouse()\n" 
         if script.grabKeyboard:

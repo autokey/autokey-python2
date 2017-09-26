@@ -583,13 +583,13 @@ dialog.info_dialog("Window information",
         self.globalHotkeys.append(self.recordHotkey)
         self.globalHotkeys.append(self.configHotkey)
         self.globalHotkeys.append(self.toggleServiceHotkey)
-        #_logger.debug("Global hotkeys: %s", self.globalHotkeys)
+        logging.debug("Global hotkeys: %s", self.globalHotkeys)
         
-        #_logger.debug("Hotkey folders: %s", self.hotKeyFolders)
-        #_logger.debug("Hotkey phrases: %s", self.hotKeys)
-        #_logger.debug("Abbreviation phrases: %s", self.abbreviations)
-        #_logger.debug("All folders: %s", self.allFolders)
-        #_logger.debug("All phrases: %s", self.allItems)
+        logging.debug("Hotkey folders: %s", self.hotKeyFolders)
+        logging.debug("Hotkey phrases: %s", self.hotKeys)
+        logging.debug("Abbreviation phrases: %s", self.abbreviations)
+        logging.debug("All folders: %s", self.allFolders)
+        logging.debug("All phrases: %s", self.allItems)
         
         if persistGlobal:
             save_config(self)
