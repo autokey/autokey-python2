@@ -131,6 +131,7 @@ class AbstractAbbreviation:
         @param buffer Input buffer to be checked (as string)
         """
         for abbr in self.abbreviations:
+            logging.debug("checking abbreviation '%s'", abbr)
             if self.__checkInput(buffer, abbr):
                 return True
         
@@ -277,6 +278,7 @@ class AbstractWindowFilter:
     def _should_trigger_window_title(self, windowInfo):
         r = self.get_applicable_regex()
         if r is not None:
+            logging.debug("window filter regex='%s'", r.pattern)
             return r.match(windowInfo[0]) or r.match(windowInfo[1]) 
         else:
             return True
@@ -724,16 +726,19 @@ class Phrase(AbstractAbbreviation, AbstractHotkey, AbstractWindowFilter):
         self.modes = modes
 
     def check_input(self, buffer, windowInfo):
+        logging.debug("Phrase::check_input(%s, %s)", buffer, windowInfo)
+        logging.debug("_should_trigger_window_title(windowInfo)='%s'", self._should_trigger_window_title(windowInfo))
         if self._should_trigger_window_title(windowInfo):
             abbr = False
             predict = False
             
+            logging.debug("TriggerMode.ABBREVIATION=%s", TriggerMode.ABBREVIATION)
             if TriggerMode.ABBREVIATION in self.modes:
                 abbr = self._should_trigger_abbreviation(buffer)
             
             # TODO - re-enable me if restoring predictive functionality
-            #if TriggerMode.PREDICTIVE in self.modes:
-            #    predict = self._should_trigger_predictive(buffer)
+            # if TriggerMode.PREDICTIVE in self.modes:
+            #     predict = self._should_trigger_predictive(buffer)
             
             return (abbr or predict)
             
