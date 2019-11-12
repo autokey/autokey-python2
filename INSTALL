@@ -13,3 +13,6 @@ sudo dpkg -i autokey-gtk_<version>.deb autokey-common_<version>.deb
 
 Or the Qt version:
 sudo dpkg -i autokey-qt_<version>.deb autokey-common_<version>.deb
+
+This branch of AutoKey is abandoned. Please visit https://github.com/autokey/autokey
+for the current version of this package.
